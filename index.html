@@ -5,632 +5,191 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Channel Tag Designer</title>
 <style>
-* { margin:0; padding:0; box-sizing:border-box; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background:#0f0f1a; color:#e0e0e0; min-height:100vh; padding:20px; }
-h1 { font-size:24px; margin-bottom:4px; }
-.subtitle { color:#888; font-size:13px; margin-bottom:24px; }
-.main-layout { display:flex; gap:24px; flex-wrap:wrap; }
-.controls { flex:1; min-width:320px; max-width:420px; }
-.preview-area { flex:1; min-width:380px; display:flex; flex-direction:column; gap:16px; align-items:center; }
-.section { background:#1a1a2e; border-radius:12px; padding:16px; margin-bottom:12px; }
-.section-title { font-size:14px; font-weight:600; margin-bottom:12px; color:#a0a0c0; }
-.row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:8px; }
-.row label { font-size:12px; color:#888; min-width:60px; }
-input[type="text"] { background:#252540; border:1px solid #333; color:#fff; padding:6px 10px; border-radius:6px; font-size:13px; width:100%; }
-input[type="color"] { -webkit-appearance:none; border:none; width:32px; height:32px; border-radius:6px; cursor:pointer; background:transparent; }
-input[type="color"]::-webkit-color-swatch-wrapper { padding:0; }
-input[type="color"]::-webkit-color-swatch { border:1px solid #444; border-radius:6px; }
-select { background:#252540; border:1px solid #333; color:#fff; padding:6px 10px; border-radius:6px; font-size:13px; cursor: pointer; }
-.color-group { display:flex; gap:10px; flex-wrap:wrap; }
-.color-item { display:flex; flex-direction:column; align-items:center; gap:4px; }
-.color-item label { font-size:10px; color:#666; }
-button { background:#6366f1; color:#fff; border:none; padding:8px 16px; border-radius:8px; cursor:pointer; font-size:13px; transition:.2s; }
-button:hover { background:#818cf8; }
-button:disabled { opacity:.4; cursor:default; }
-button.small { padding:4px 10px; font-size:11px; }
-button.outline { background:transparent; border:1px solid #444; color:#ccc; }
-button.outline:hover { border-color:#6366f1; color:#6366f1; }
-.preset-row { display:flex; gap:6px; flex-wrap:wrap; }
-.preset-btn { padding:4px 12px; font-size:11px; border-radius:4px; border:1px solid #444; background:#1e1e3a; color:#ccc; cursor:pointer; }
-.preset-btn:hover { border-color:#6366f1; }
-.style-row { display:flex; gap:6px; flex-wrap:wrap; }
-.style-btn { padding:4px 12px; font-size:11px; border-radius:4px; border:1px solid #444; background:#1e1e3a; color:#ccc; cursor:pointer; }
-.style-btn:hover, .style-btn.active { border-color:#6366f1; background:#6366f1; color:#fff; }
-.tag-wrapper { display:flex; flex-direction:column; align-items:center; gap:10px; }
-.tag-label { font-size:11px; color:#666; }
-.tag-preview { width:180px; height:78px; border-radius:12px; display:flex; align-items:center; justify-content:flex-start; padding:24px 30px; font-size:28px; line-height:28px; font-weight:700; box-sizing:border-box; position:relative; overflow:hidden; }
-.tag-guide { position:absolute; left:30px; top:24px; width:120px; height:30px; border:1px dashed rgba(255,255,255,.15); border-radius:4px; pointer-events:none; }
-.tag-guide-label { position:absolute; right:2px; bottom:0; font-size:8px; color:rgba(255,255,255,.2); font-weight:400; line-height:1; }
-.download-row { display:flex; gap:8px; }
-.css-box { background:#111; border-radius:8px; padding:12px; font-family:monospace; font-size:11px; color:#8b8; white-space:pre-wrap; max-height:200px; overflow-y:auto; margin-top:8px; }
-.css-box button { margin-bottom:8px; }
-.toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#333; color:#fff; padding:10px 24px; border-radius:20px; font-size:13px; z-index:100; opacity:0; transition:opacity .3s; pointer-events:none; }
-.toast.show { opacity:1; }
-.crop-canvas { max-width:100%; border-radius:8px; cursor:crosshair; border:1px solid #333; }
-.range-row { display:flex; align-items:center; gap:8px; margin-bottom:4px; font-size:12px; color:#888; }
-.range-row input[type="range"] { flex:1; }
-.range-row span { min-width:30px; text-align:right; }
-/* 数字紧凑 */
-.num-compact { letter-spacing:0; }
-.font-upload-btn { cursor:pointer; padding:6px 10px; font-size:12px; }
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f0f1a;color:#e0e0e0;min-height:100vh;padding:20px}
+h1{font-size:24px;margin-bottom:4px}
+.subtitle{color:#888;font-size:13px;margin-bottom:24px}
+.layout{display:flex;gap:24px;flex-wrap:wrap}
+.panel{flex:1;min-width:320px;max-width:420px}
+.preview-area{flex:1;min-width:380px;display:flex;flex-direction:column;gap:16px;align-items:center}
+.sec{background:#1a1a2e;border-radius:12px;padding:16px;margin-bottom:12px}
+.sec-title{font-size:14px;font-weight:600;margin-bottom:12px;color:#a0a0c0}
+.rw{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+.rw>label{font-size:12px;color:#888;min-width:60px}
+input[type=text]{background:#252540;border:1px solid #333;color:#fff;padding:6px 10px;border-radius:6px;font-size:13px;width:100%}
+input[type=color]{-webkit-appearance:none;border:none;width:36px;height:36px;border-radius:6px;cursor:pointer;background:transparent}
+input[type=color]::-webkit-color-swatch-wrapper{padding:0}
+input[type=color]::-webkit-color-swatch{border:1px solid #444;border-radius:6px}
+select{background:#252540;border:1px solid #333;color:#fff;padding:6px 10px;border-radius:6px;font-size:13px;cursor:pointer}
+.btn{background:#6366f1;color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:13px;transition:.2s}
+.btn:hover{background:#818cf8}
+.btn:disabled{opacity:.4;cursor:default}
+.btn-sm{padding:4px 10px;font-size:11px}
+.btn-ghost{background:transparent;border:1px solid #444;color:#ccc}
+.btn-ghost:hover{border-color:#6366f1;color:#6366f1}
+.color-row{display:flex;gap:14px;flex-wrap:wrap}
+.color-cell{display:flex;flex-direction:column;align-items:center;gap:4px}
+.color-cell .hex{font-size:10px;color:#666}
+.preset-btns{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.preset-btns button{padding:4px 12px;font-size:11px;border-radius:4px;border:1px solid #444;background:#1e1e3a;color:#ccc;cursor:pointer}
+.preset-btns button:hover{border-color:#6366f1}
+.style-btns{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.style-btns button{padding:4px 12px;font-size:11px;border-radius:4px;border:1px solid #444;background:#1e1e3a;color:#ccc;cursor:pointer}
+.style-btns button.active{border-color:#6366f1;background:#6366f1;color:#fff}
+.tag-wrap{display:flex;flex-direction:column;align-items:center;gap:8px}
+.tag-lbl{font-size:11px;color:#666}
+.tag{width:180px;height:78px;border-radius:12px;display:flex;align-items:center;justify-content:flex-start;padding:24px 30px;font-size:28px;line-height:28px;font-weight:700;box-sizing:border-box;position:relative;overflow:hidden;transition:all .15s}
+.guide-box{position:absolute;left:30px;top:24px;width:120px;height:30px;border:1px dashed rgba(255,255,255,.2);border-radius:4px;pointer-events:none}
+.guide-box span{position:absolute;right:2px;bottom:0;font-size:8px;color:rgba(255,255,255,.2);font-weight:400;line-height:1}
+.btns-row{display:flex;gap:8px;flex-wrap:wrap}
+.css-panel{background:#111;border-radius:8px;padding:12px;font-family:monospace;font-size:11px;color:#8b8;white-space:pre-wrap;max-height:200px;overflow-y:auto;margin-top:4px}
+.canvas-crop{max-width:100%;border-radius:8px;cursor:crosshair;border:1px solid #333}
+.slider-row{display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:12px;color:#888}
+.slider-row input[type=range]{flex:1}
+.slider-row span{min-width:30px;text-align:right}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:10px 24px;border-radius:20px;font-size:13px;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none}
+.toast.on{opacity:1}
+.num-compact{letter-spacing:0}
+.hidden{display:none!important}
 </style>
 </head>
 <body>
 <h1>Channel Tag Designer</h1>
 <p class="subtitle">频道标签设计工具 · 180×78px 实时预览</p>
 
-<div class="main-layout">
-  <div class="controls">
-    <!-- 设计参数 -->
-    <div class="section">
-      <div class="section-title">🎨 设计参数</div>
-      <div class="row"><label>标签标题</label><input type="text" id="tagTitle" value="设计频道" maxlength="8" oninput="updatePreview()" placeholder="输入标签标题..."></div>
-      <div class="row">
-        <label>文案字体</label>
-        <select id="tagFont" onchange="updatePreview()">
-          <option value="'PingFang SC','Microsoft YaHei',sans-serif">苹方-简</option>
-          <option value="'PingFang TC','Microsoft YaHei',sans-serif">苹方-繁</option>
-          <option value="'Heiti SC','Microsoft YaHei',sans-serif">黑体-简</option>
-          <option value="'Heiti TC','Microsoft YaHei',sans-serif">黑体-繁</option>
-          <option value="'Hiragino Sans GB','Microsoft YaHei',sans-serif">冬青黑体简体</option>
-          <option value="'Hiragino Sans','Microsoft YaHei',sans-serif">Hiragino Sans</option>
-          <option value="'Microsoft YaHei',sans-serif">微软雅黑</option>
-          <option value="'Lantinghei SC','Microsoft YaHei',sans-serif">兰亭黑-简</option>
-          <option value="'Lantinghei TC','Microsoft YaHei',sans-serif">兰亭黑-繁</option>
-          <option value="'FZRuiZhengHeiS','Microsoft YaHei',sans-serif">方正锐正黑</option>
-          <option value="'FZLanTingYuanS','Microsoft YaHei',sans-serif">方正兰亭圆</option>
-          <option value="'FZZhongDengXian','Microsoft YaHei',sans-serif">方正中等线</option>
-          <option value="'HYQiHei','Microsoft YaHei',sans-serif">汉仪雅酷黑</option>
-          <option value="'MF YuanHei','Microsoft YaHei',sans-serif">造字工房元黑体</option>
-          <option value="'MF FangHei','Microsoft YaHei',sans-serif">造字工房方黑体</option>
-          <option value="'Alibaba PuHuiTi 3.0','Microsoft YaHei',sans-serif">阿里巴巴普惠体 3.0</option>
-          <option value="'HarmonyOS Sans','Microsoft YaHei',sans-serif">HarmonyOS Sans</option>
-        </select>
-        <button class="small outline font-upload-btn" onclick="document.getElementById('fontFileInput').click()">📁 安装字体</button>
-        <input type="file" id="fontFileInput" accept=".ttf,.otf,.woff,.woff2" style="display:none" onchange="installFont(this.files[0])">
-      </div>
-    </div>
-
-    <!-- 颜色设置 -->
-    <div class="section">
-      <div class="section-title">🎨 颜色设置</div>
-      <div class="color-group">
-        <div class="color-item"><label>常态背景</label><input type="color" id="normalBg" value="#2a2a4a" oninput="updatePreview()"><span style="font-size:10px;color:#666">#2a2a4a</span></div>
-        <div class="color-item"><label>常态文字</label><input type="color" id="normalText" value="#a0a0c0" oninput="updatePreview()"><span style="font-size:10px;color:#666">#a0a0c0</span></div>
-        <div class="color-item"><label>选中背景</label><input type="color" id="activeBg" value="#6366f1" oninput="updatePreview()"><span style="font-size:10px;color:#666">#6366f1</span></div>
-        <div class="color-item"><label>选中文字</label><input type="color" id="activeText" value="#ffffff" oninput="updatePreview()"><span style="font-size:10px;color:#666">#ffffff</span></div>
-      </div>
-      <div style="margin-top:8px;font-size:11px;color:#666;">预设配色</div>
-      <div class="preset-row" style="margin-top:4px;">
-        <button class="preset-btn" onclick="applyPreset('purple')">紫色</button>
-        <button class="preset-btn" onclick="applyPreset('blue')">蓝色</button>
-        <button class="preset-btn" onclick="applyPreset('green')">绿色</button>
-        <button class="preset-btn" onclick="applyPreset('orange')">橙色</button>
-        <button class="preset-btn" onclick="applyPreset('dark')">暗黑</button>
-      </div>
-      <div style="margin-top:8px;font-size:11px;color:#666;">标签样式</div>
-      <div class="style-row" style="margin-top:4px;">
-        <button class="style-btn active" onclick="applyStyle('solid',this)">Solid</button>
-        <button class="style-btn" onclick="applyStyle('outline',this)">Outline</button>
-        <button class="style-btn" onclick="applyStyle('soft',this)">Soft</button>
-        <button class="style-btn" onclick="applyStyle('pill',this)">Pill</button>
-        <button class="style-btn" onclick="applyStyle('gradient',this)">Gradient</button>
-      </div>
-    </div>
-
-    <!-- 参考图 -->
-    <div class="section">
-      <div class="section-title">🖼 参考图提取配色 & 文字</div>
-      <div class="row">
-        <button onclick="document.getElementById('refFileInput').click()">📤 上传参考图</button>
-        <input type="file" id="refFileInput" accept="image/*" style="display:none" onchange="loadRefImage(this.files[0])">
-        <button id="extractBtn" disabled onclick="extractColors()">🎨 提取配色</button>
-        <button id="cropBtn" disabled onclick="startCrop()">🔪 切图合成</button>
-      </div>
-      <div id="cropArea" style="display:none;margin-top:8px;">
-        <canvas id="cropCanvas" class="crop-canvas"></canvas>
-        <div style="margin-top:6px;display:flex;gap:6px;">
-          <button onclick="confirmCrop()">✅ 确认框选</button>
-          <button class="outline" onclick="cancelCrop()">取消</button>
-        </div>
-      </div>
-      <div id="cutoutPreview" style="display:none;margin-top:8px;">
-        <canvas id="cutoutPreviewCanvas" style="max-width:100%;border:1px solid #333;border-radius:6px;background:url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22><rect fill=%22%23333%22/><rect fill=%22%23555%22 x=%228%22 y=%228%22 width=%228%22 height=%228%22/><rect fill=%22%23555%22 y=%228%22 width=%228%22 height=%228%22/></svg>') repeat;"></canvas>
-        <div class="range-row"><label>去背景强度</label><input type="range" id="cutoutTolerance" min="10" max="100" value="40" oninput="updateCutoutPreview()"><span id="cutoutToleranceVal">40</span></div>
-        <div class="range-row"><label>缩放</label><input type="range" id="cutoutScale" min="50" max="200" value="100" oninput="updateCutoutScale()"><span id="cutoutScaleVal">1.0</span></div>
-        <div class="range-row"><label>X偏移</label><input type="range" id="cutoutOffsetX" min="0" max="100" value="0" oninput="updateCutoutPosition()"><span id="cutoutXVal">0</span>px</div>
-        <div class="range-row"><label>Y偏移</label><input type="range" id="cutoutOffsetY" min="0" max="54" value="0" oninput="updateCutoutPosition()"><span id="cutoutYVal">0</span>px</div>
-        <button onclick="applyCutoutToTag()" style="margin-top:6px;">📌 合成到标签</button>
-      </div>
+<div class="layout">
+<div class="panel">
+  <div class="sec">
+    <div class="sec-title">🎨 设计参数</div>
+    <div class="rw"><label>标签标题</label><input type="text" id="tagTitle" value="设计频道" maxlength="8" oninput="updateTag()" placeholder="输入标签标题..."></div>
+    <div class="rw">
+      <label>文案字体</label>
+      <select id="tagFont" onchange="updateTag()">
+        <option value="'PingFang SC','Microsoft YaHei',sans-serif">苹方-简</option>
+        <option value="'PingFang TC','Microsoft YaHei',sans-serif">苹方-繁</option>
+        <option value="'Heiti SC','Microsoft YaHei',sans-serif">黑体-简</option>
+        <option value="'Heiti TC','Microsoft YaHei',sans-serif">黑体-繁</option>
+        <option value="'Hiragino Sans GB','Microsoft YaHei',sans-serif">冬青黑体简体</option>
+        <option value="'Hiragino Sans','Microsoft YaHei',sans-serif">Hiragino Sans</option>
+        <option value="'Microsoft YaHei',sans-serif">微软雅黑</option>
+        <option value="'Lantinghei SC','Microsoft YaHei',sans-serif">兰亭黑-简</option>
+        <option value="'Lantinghei TC','Microsoft YaHei',sans-serif">兰亭黑-繁</option>
+        <option value="'FZRuiZhengHeiS','Microsoft YaHei',sans-serif">方正锐正黑</option>
+        <option value="'FZLanTingYuanS','Microsoft YaHei',sans-serif">方正兰亭圆</option>
+        <option value="'FZZhongDengXian','Microsoft YaHei',sans-serif">方正中等线</option>
+        <option value="'HYQiHei','Microsoft YaHei',sans-serif">汉仪雅酷黑</option>
+        <option value="'MF YuanHei','Microsoft YaHei',sans-serif">造字工房元黑体</option>
+        <option value="'MF FangHei','Microsoft YaHei',sans-serif">造字工房方黑体</option>
+        <option value="'Alibaba PuHuiTi 3.0','Microsoft YaHei',sans-serif">阿里巴巴普惠体 3.0</option>
+        <option value="'HarmonyOS Sans','Microsoft YaHei',sans-serif">HarmonyOS Sans</option>
+      </select>
+      <button class="btn-sm btn-ghost" onclick="document.getElementById('fontFileInput').click()">📁 安装字体</button>
     </div>
   </div>
-
-  <!-- 预览区 -->
-  <div class="preview-area">
-    <div class="section-title" style="align-self:flex-start;">👁 实时预览</div>
-    <div class="tag-wrapper">
-      <span class="tag-label">✦ 常态</span>
-      <div class="tag-preview" id="tagNormal"><span>设计频道</span><div class="tag-guide"><span class="tag-guide-label">规范区 120×30</span></div></div>
+  <div class="sec">
+    <div class="sec-title">🎨 颜色设置</div>
+    <div class="color-row">
+      <div class="color-cell"><label>常态背景</label><input type="color" id="nBg" value="#2a2a4a" oninput="updateTag()"><span class="hex" id="nBgHex">#2a2a4a</span></div>
+      <div class="color-cell"><label>常态文字</label><input type="color" id="nText" value="#a0a0c0" oninput="updateTag()"><span class="hex" id="nTextHex">#a0a0c0</span></div>
+      <div class="color-cell"><label>选中背景</label><input type="color" id="aBg" value="#6366f1" oninput="updateTag()"><span class="hex" id="aBgHex">#6366f1</span></div>
+      <div class="color-cell"><label>选中文字</label><input type="color" id="aText" value="#ffffff" oninput="updateTag()"><span class="hex" id="aTextHex">#ffffff</span></div>
     </div>
-    <div class="tag-wrapper">
-      <span class="tag-label">✦ 选中状态</span>
-      <div class="tag-preview" id="tagActive" style="background:#6366f1;color:#fff;box-shadow:0 0 0 3px #6366f1,0 8px 24px rgba(0,0,0,.3);"><span>设计频道</span><div class="tag-guide"><span class="tag-guide-label">规范区 120×30</span></div></div>
-    </div>
-    <div class="download-row">
-      <button onclick="downloadTag('normal')">⬇ 下载常态标签 (PNG)</button>
-      <button onclick="downloadTag('active')">⬇ 下载选中标签 (PNG)</button>
-    </div>
-    <div class="section" style="width:100%;margin-top:0;">
-      <div class="section-title">✦ 尺寸: 180 × 78 px</div>
-      <div>📋 CSS 代码 <button class="small" style="margin-left:8px;" onclick="copyCSS()">📋 复制</button></div>
-      <div class="css-box" id="cssOutput"></div>
-    </div>
+    <div style="font-size:11px;color:#666;margin-top:10px;">预设配色</div>
+    <div class="preset-btns"><button onclick="preset('purple')">紫色</button><button onclick="preset('blue')">蓝色</button><button onclick="preset('green')">绿色</button><button onclick="preset('orange')">橙色</button><button onclick="preset('dark')">暗黑</button></div>
+    <div style="font-size:11px;color:#666;margin-top:10px;">标签样式</div>
+    <div class="style-btns" id="styleBtns"><button class="active" onclick="setStyle('solid',this)">Solid</button><button onclick="setStyle('outline',this)">Outline</button><button onclick="setStyle('soft',this)">Soft</button><button onclick="setStyle('pill',this)">Pill</button><button onclick="setStyle('gradient',this)">Gradient</button></div>
+  </div>
+  <div class="sec">
+    <div class="sec-title">🖼 参考图提取配色 & 文字</div>
+    <div class="rw"><button class="btn" onclick="document.getElementById('refInput').click()">📤 上传参考图</button><input type="file" id="refInput" accept="image/*" class="hidden" onchange="loadRef(this.files[0])"><button class="btn" id="extractBtn" disabled onclick="extractColors()">🎨 提取配色</button><button class="btn" id="cropBtn" disabled onclick="startCrop()">🔪 切图合成</button></div>
+    <div id="cropArea" class="hidden" style="margin-top:8px"><canvas id="cropCanvas" class="canvas-crop"></canvas><div style="margin-top:6px;display:flex;gap:6px"><button class="btn btn-sm" onclick="confirmCrop()">✅ 确认框选</button><button class="btn-sm btn-ghost" onclick="cancelCrop()">取消</button></div></div>
+    <div id="cutoutArea" class="hidden" style="margin-top:8px"><canvas id="cutoutPreview" style="max-width:100%;border:1px solid #333;border-radius:6px"></canvas>
+      <div class="slider-row"><label>去背景强度</label><input type="range" id="tol" min="10" max="100" value="40" oninput="upCutPrev()"><span id="tolVal">40</span></div>
+      <div class="slider-row"><label>缩放</label><input type="range" id="cutS" min="50" max="200" value="100" oninput="upCutPrev()"><span id="cutSVal">1.0</span></div>
+      <div class="slider-row"><label>X偏移</label><input type="range" id="cutX" min="0" max="100" value="0" oninput="applyCutout()"><span id="cutXVal">0</span>px</div>
+      <div class="slider-row"><label>Y偏移</label><input type="range" id="cutY" min="0" max="54" value="0" oninput="applyCutout()"><span id="cutYVal">0</span>px</div>
+      <button class="btn btn-sm" onclick="applyCutout()" style="margin-top:6px">📌 合成到标签</button></div>
   </div>
 </div>
-
+<div class="preview-area">
+  <div class="sec-title" style="align-self:flex-start">👁 实时预览</div>
+  <div class="tag-wrap"><span class="tag-lbl">✦ 常态</span><div class="tag" id="tagN"><span id="tagNText">设计频道</span><div class="guide-box"><span>规范区 120×30</span></div></div></div>
+  <div class="tag-wrap"><span class="tag-lbl">✦ 选中状态</span><div class="tag" id="tagA"><span id="tagAText">设计频道</span><div class="guide-box"><span>规范区 120×30</span></div></div></div>
+  <div class="btns-row"><button class="btn" onclick="downloadTag('normal')">⬇ 下载常态标签 (PNG)</button><button class="btn" onclick="downloadTag('active')">⬇ 下载选中标签 (PNG)</button></div>
+  <div class="sec" style="width:100%;margin-top:0"><div class="sec-title">✦ 尺寸: 180 × 78 px</div><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">📋 CSS 代码 <button class="btn-sm btn-ghost" onclick="copyCSS()">📋 复制</button></div><div class="css-panel" id="cssCode"></div></div>
+</div>
+</div>
 <div class="toast" id="toast"></div>
-
+<input type="file" id="fontFileInput" accept=".ttf,.otf,.woff,.woff2" class="hidden" onchange="installFont(this.files[0])">
 <script>
-// ===== DOM =====
-const tagTitle = document.getElementById('tagTitle');
-const tagFont = document.getElementById('tagFont');
-const normalBg = document.getElementById('normalBg');
-const normalText = document.getElementById('normalText');
-const activeBg = document.getElementById('activeBg');
-const activeText = document.getElementById('activeText');
-const tagNormal = document.getElementById('tagNormal');
-const tagActive = document.getElementById('tagActive');
-const extractBtn = document.getElementById('extractBtn');
-const cropBtn = document.getElementById('cropBtn');
-const toast = document.getElementById('toast');
-
-let toastTimer;
-function showToast(msg) {
-  toast.textContent = msg;
-  toast.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => toast.classList.remove('show'), 2000);
+var $tagN=document.getElementById("tagN"),$tagA=document.getElementById("tagA");
+var $tagNText=document.getElementById("tagNText"),$tagAText=document.getElementById("tagAText");
+var $tagTitle=document.getElementById("tagTitle"),$tagFont=document.getElementById("tagFont");
+var nBg=document.getElementById("nBg"),nText=document.getElementById("nText");
+var aBg=document.getElementById("aBg"),aText=document.getElementById("aText");
+var nBgHex=document.getElementById("nBgHex"),nTextHex=document.getElementById("nTextHex");
+var aBgHex=document.getElementById("aBgHex"),aTextHex=document.getElementById("aTextHex");
+var $extractBtn=document.getElementById("extractBtn"),$cropBtn=document.getElementById("cropBtn");
+var $toast=document.getElementById("toast");
+var _t;
+function toast(m){$toast.textContent=m;$toast.classList.add("on");clearTimeout(_t);_t=setTimeout(function(){$toast.classList.remove("on")},2000)}
+function fmtText(t){if(!t)return"";var h="";for(var i=0;i<t.length;i++){var c=t[i];h+=/\d/.test(c)?'<span class="num-compact">'+c+"</span>":c}return h}
+var curStyle="solid";
+var presets={purple:{nBg:"#2a2a4a",nText:"#a0a0c0",aBg:"#6366f1",aText:"#ffffff"},blue:{nBg:"#1a2a3a",nText:"#88aacc",aBg:"#3b82f6",aText:"#ffffff"},green:{nBg:"#1a2a2a",nText:"#88ccaa",aBg:"#22c55e",aText:"#ffffff"},orange:{nBg:"#2a2a1a",nText:"#ccaa88",aBg:"#f59e0b",aText:"#ffffff"},dark:{nBg:"#1a1a1a",nText:"#888888",aBg:"#444444",aText:"#ffffff"}};
+function preset(k){var p=presets[k];nBg.value=p.nBg;nText.value=p.nText;aBg.value=p.aBg;aText.value=p.aText;updateTag()}
+function setStyle(s,btn){curStyle=s;var btns=document.querySelectorAll("#styleBtns button");for(var i=0;i<btns.length;i++)btns[i].classList.remove("active");btn.classList.add("active");updateTag()}
+function applyStyleToTag(tag,state){
+  var abg=aBg.value,atxt=aText.value,ntxt=nText.value,nbg=nBg.value;
+  tag.style.transition="all .15s";tag.style.boxShadow="none";tag.style.border="none";tag.style.borderRadius="12px";tag.style.backdropFilter="none";
+  if(state==="normal"){if(curStyle==="solid"){tag.style.background=nbg;tag.style.color=ntxt}else if(curStyle==="outline"){tag.style.background="transparent";tag.style.color=ntxt;tag.style.border="2px solid "+ntxt}else if(curStyle==="soft"){tag.style.background=nbg+"33";tag.style.color=ntxt;tag.style.backdropFilter="blur(4px)"}else if(curStyle==="pill"){tag.style.background=nbg;tag.style.color=ntxt;tag.style.borderRadius="39px"}else if(curStyle==="gradient"){tag.style.background="linear-gradient(135deg,"+nbg+","+abg+")";tag.style.color=ntxt}}
+  else{if(curStyle==="solid"){tag.style.background=abg;tag.style.color=atxt;tag.style.boxShadow="0 0 0 3px "+abg+",0 8px 24px rgba(0,0,0,.3)"}else if(curStyle==="outline"){tag.style.background="transparent";tag.style.color=atxt;tag.style.border="3px solid "+atxt}else if(curStyle==="soft"){tag.style.background=abg+"33";tag.style.color=atxt;tag.style.backdropFilter="blur(4px)";tag.style.boxShadow="0 8px 24px rgba(0,0,0,.3)"}else if(curStyle==="pill"){tag.style.background=abg;tag.style.color=atxt;tag.style.borderRadius="39px";tag.style.boxShadow="0 0 0 3px "+abg+",0 8px 24px rgba(0,0,0,.3)"}else if(curStyle==="gradient"){tag.style.background="linear-gradient(135deg,"+abg+","+nbg+")";tag.style.color=atxt;tag.style.boxShadow="0 0 0 3px "+abg+",0 8px 24px rgba(0,0,0,.3)"}}
 }
-
-// ===== 文案格式化 =====
-function formatTitle(text) {
-  if (!text) return '';
-  const hasNum = /\d/.test(text);
-  const chars = [...text];
-  const numCount = chars.filter(c => /\d/.test(c)).length;
-  const totalLen = text.length;
-  let html = '';
-  if (hasNum) {
-    for (const c of chars) {
-      if (/\d/.test(c)) html += `<span class="num-compact">${c}</span>`;
-      else html += c;
-    }
-  } else {
-    html = text;
-  }
-  return html;
+function updateTag(){
+  var t=$tagTitle.value,font=$tagFont.value,txt=fmtText(t);
+  $tagNText.innerHTML=txt;$tagAText.innerHTML=txt;
+  $tagN.style.fontFamily=font;$tagA.style.fontFamily=font;
+  nBgHex.textContent=nBg.value;nTextHex.textContent=nText.value;
+  aBgHex.textContent=aBg.value;aTextHex.textContent=aText.value;
+  applyStyleToTag($tagN,"normal");applyStyleToTag($tagA,"active");
+  updateCSS()
 }
-
-// ===== 实时预览 =====
-function updatePreview() {
-  const title = tagTitle.value || '';
-  const font = tagFont.value;
-  const nBg = normalBg.value;
-  const nText = normalText.value;
-  const aBg = activeBg.value;
-  const aText = activeText.value;
-
-  // 常态
-  tagNormal.style.background = 'transparent';
-  tagNormal.style.border = 'none';
-  tagNormal.style.color = nText;
-  tagNormal.style.fontFamily = font;
-  tagNormal.querySelector('span').innerHTML = formatTitle(title);
-
-  // 选中
-  tagActive.style.background = aBg;
-  tagActive.style.color = aText;
-  tagActive.style.fontFamily = font;
-  tagActive.querySelector('span').innerHTML = formatTitle(title);
-
-  updateCSS();
+function updateCSS(){var font=$tagFont.value;document.getElementById("cssCode").textContent=".channel-tag {
+  width: 180px; height: 78px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: flex-start;
+  padding: 24px 30px; font-size: 28px; line-height: 28px;
+  font-weight: 700; font-family: "+font+";
+  box-sizing: border-box; transition: all 0.3s ease;
+  background: "+$tagN.style.background+";
+  color: "+nText.value+";
 }
-
-function updateCSS() {
-  const font = tagFont.value;
-  const nBg = normalBg.value;
-  const nText = normalText.value;
-  const aBg = activeBg.value;
-  const aText = activeText.value;
-  const css = `.channel-tag {
-  width: 180px;
-  height: 78px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  padding: 24px 30px;
-  font-size: 28px;
-  line-height: 28px;
-  font-weight: 700;
-  font-family: ${font};
-  box-sizing: border-box;
-  background: transparent;
-  border: none;
-  color: ${nText};
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-.channel-tag:hover,
-.channel-tag.active {
-  background: ${aBg};
-  color: ${aText};
-  box-shadow: 0 0 0 3px ${aBg}, 0 8px 24px rgba(0,0,0,0.3);
-}`;
-  document.getElementById('cssOutput').textContent = css;
-}
-
-function copyCSS() {
-  navigator.clipboard.writeText(document.getElementById('cssOutput').textContent);
-  showToast('已复制到剪贴板!');
-}
-
-// ===== 预设配色 =====
-const presets = {
-  purple: { nBg:'#2a2a4a', nText:'#a0a0c0', aBg:'#6366f1', aText:'#ffffff' },
-  blue:   { nBg:'#1a2a3a', nText:'#88aacc', aBg:'#3b82f6', aText:'#ffffff' },
-  green:  { nBg:'#1a2a2a', nText:'#88ccaa', aBg:'#22c55e', aText:'#ffffff' },
-  orange: { nBg:'#2a2a1a', nText:'#ccaa88', aBg:'#f59e0b', aText:'#ffffff' },
-  dark:   { nBg:'#1a1a1a', nText:'#888888', aBg:'#444444', aText:'#ffffff' }
-};
-
-function applyPreset(name) {
-  const p = presets[name];
-  normalBg.value = p.nBg;
-  normalText.value = p.nText;
-  activeBg.value = p.aBg;
-  activeText.value = p.aText;
-  updatePreview();
-}
-
-// ===== 标签样式 =====
-let currentStyle = 'solid';
-function applyStyle(style, btn) {
-  document.querySelectorAll('.style-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  currentStyle = style;
-  updatePreview();
-}
-
-// ===== 参考图 =====
-let refImageData = null;
-let cropStart = null, cropEnd = null;
-let rawCropData = null;
-let croppedTextImage = null;
-
-function loadRefImage(file) {
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    const img = new Image();
-    img.onload = () => {
-      refImageData = img;
-      extractBtn.disabled = false;
-      cropBtn.disabled = false;
-      showToast('📷 参考图已加载');
-    };
-    img.src = e.target.result;
-  };
-  reader.readAsDataURL(file);
-}
-
-// ===== 提取配色 =====
-function extractColors() {
-  if (!refImageData) return showToast('请先上传参考图');
-  const canvas = document.createElement('canvas');
-  const size = 50;
-  canvas.width = size; canvas.height = size;
-  const ctx = canvas.getContext('2d');
-  ctx.drawImage(refImageData, 0, 0, size, size);
-  const data = ctx.getImageData(0, 0, size, size).data;
-  
-  const samples = [];
-  for (let i = 0; i < data.length; i += 4) {
-    samples.push({r:data[i], g:data[i+1], b:data[i+2]});
-  }
-  
-  // k-means 找主色
-  function kmeans(pts, k, iters) {
-    let centroids = pts.slice(0, k).map(p => ({...p}));
-    for (let iter = 0; iter < iters; iter++) {
-      const clusters = Array(k).fill().map(() => []);
-      for (const p of pts) {
-        let best = 0, bestDist = Infinity;
-        centroids.forEach((c, i) => {
-          const d = (p.r-c.r)**2 + (p.g-c.g)**2 + (p.b-c.b)**2;
-          if (d < bestDist) { bestDist = d; best = i; }
-        });
-        clusters[best].push(p);
-      }
-      centroids = clusters.map(cl => {
-        if (!cl.length) return {r:0,g:0,b:0};
-        return {
-          r: Math.round(cl.reduce((s,p) => s+p.r, 0)/cl.length),
-          g: Math.round(cl.reduce((s,p) => s+p.g, 0)/cl.length),
-          b: Math.round(cl.reduce((s,p) => s+p.b, 0)/cl.length)
-        };
-      });
-    }
-    return centroids.sort((a,b) => (b.r+b.g+b.b) - (a.r+a.g+a.b));
-  }
-  
-  const colors = kmeans(samples, 5, 5);
-  const textColor = colors[colors.length - 1 - 2] || colors[2]; // 中间亮度
-  const hex = '#' + [textColor.r, textColor.g, textColor.b].map(c => c.toString(16).padStart(2,'0')).join('');
-  
-  // 只更新文字颜色，不更新背景色
-  normalText.value = hex;
-  activeText.value = '#ffffff';
-  
-  updatePreview();
-  showToast('🎨 已提取配色（仅文字色）');
-}
-
-// ===== 切图裁剪 =====
-function startCrop() {
-  if (!refImageData) return showToast('请先上传参考图');
-  document.getElementById('cutoutPreview').style.display = 'none';
-  const canvas = document.getElementById('cropCanvas');
-  const maxW = 380;
-  canvas._scale = Math.min(1, maxW / refImageData.width);
-  canvas.width = Math.round(refImageData.width * canvas._scale);
-  canvas.height = Math.round(refImageData.height * canvas._scale);
-  const ctx = canvas.getContext('2d');
-  ctx.drawImage(refImageData, 0, 0, canvas.width, canvas.height);
-  
-  cropStart = null; cropEnd = null;
-  rawCropData = null;
-  
-  canvas.onmousedown = (e) => {
-    cropStart = {x: e.offsetX, y: e.offsetY};
-    cropEnd = null;
-  };
-  canvas.onmousemove = (e) => {
-    if (!cropStart) return;
-    cropEnd = {x: e.offsetX, y: e.offsetY};
-    ctx.drawImage(refImageData, 0, 0, canvas.width, canvas.height);
-    ctx.strokeStyle = '#22c55e';
-    ctx.lineWidth = 2;
-    ctx.setLineDash([6,3]);
-    const x = Math.min(cropStart.x, cropEnd.x);
-    const y = Math.min(cropStart.y, cropEnd.y);
-    const w = Math.abs(cropEnd.x - cropStart.x);
-    const h = Math.abs(cropEnd.y - cropStart.y);
-    ctx.strokeRect(x, y, w, h);
-  };
-  canvas.onmouseup = (e) => { cropEnd = {x: e.offsetX, y: e.offsetY}; };
-  canvas.onmouseleave = (e) => { if (cropStart && !cropEnd) cropEnd = {x: e.offsetX, y: e.offsetY}; };
-  
-  document.getElementById('cropArea').style.display = 'block';
-  showToast('🖱 在图上框选文字区域');
-}
-
-function confirmCrop() {
-  if (!cropStart || !cropEnd) return showToast('请先框选区域');
-  const canvas = document.getElementById('cropCanvas');
-  const s = canvas._scale;
-  const x = Math.round(Math.min(cropStart.x, cropEnd.x) / s);
-  const y = Math.round(Math.min(cropStart.y, cropEnd.y) / s);
-  const w = Math.round(Math.abs(cropEnd.x - cropStart.x) / s);
-  const h = Math.round(Math.abs(cropEnd.y - cropStart.y) / s);
-  if (w < 5 || h < 5) return showToast('框选区域太小');
-  
-  const cropped = document.createElement('canvas');
-  cropped.width = w; cropped.height = h;
-  cropped.getContext('2d').drawImage(refImageData, x, y, w, h, 0, 0, w, h);
-  
-  rawCropData = { canvas: cropped, width: w, height: h };
-  document.getElementById('cropArea').style.display = 'none';
-  document.getElementById('cutoutPreview').style.display = 'block';
-  updateCutoutPreview();
-}
-
-function cancelCrop() {
-  document.getElementById('cropArea').style.display = 'none';
-  cropStart = null; cropEnd = null;
-}
-
-function removeImageBackground(imageData, tolerance) {
-  const data = imageData.data;
-  const corners = [
-    {r:data[0],g:data[1],b:data[2]},
-    {r:data[(imageData.width-1)*4],g:data[(imageData.width-1)*4+1],b:data[(imageData.width-1)*4+2]},
-    {r:data[(imageData.height-1)*imageData.width*4],g:data[(imageData.height-1)*imageData.width*4+1],b:data[(imageData.height-1)*imageData.width*4+2]},
-    {r:data[((imageData.height-1)*imageData.width+imageData.width-1)*4],g:data[((imageData.height-1)*imageData.width+imageData.width-1)*4+1],b:data[((imageData.height-1)*imageData.width+imageData.width-1)*4+2]}
-  ];
-  const avgBg = {r:0,g:0,b:0};
-  corners.forEach(c => { avgBg.r+=c.r; avgBg.g+=c.g; avgBg.b+=c.b; });
-  avgBg.r = Math.round(avgBg.r/4); avgBg.g = Math.round(avgBg.g/4); avgBg.b = Math.round(avgBg.b/4);
-  
-  for (let i = 0; i < data.length; i += 4) {
-    const dr = data[i]-avgBg.r, dg = data[i+1]-avgBg.g, db = data[i+2]-avgBg.b;
-    if (Math.sqrt(dr*dr+dg*dg+db*db) < tolerance * 4.5) data[i+3] = 0;
-  }
-}
-
-function updateCutoutPreview() {
-  if (!rawCropData) return;
-  const tol = parseInt(document.getElementById('cutoutTolerance').value);
-  document.getElementById('cutoutToleranceVal').textContent = tol;
-  
-  const temp = document.createElement('canvas');
-  temp.width = rawCropData.width; temp.height = rawCropData.height;
-  const tctx = temp.getContext('2d');
-  tctx.drawImage(rawCropData.canvas, 0, 0);
-  const id = tctx.getImageData(0, 0, temp.width, temp.height);
-  removeImageBackground(id, tol);
-  tctx.putImageData(id, 0, 0);
-  
-  const pc = document.getElementById('cutoutPreviewCanvas');
-  const s = parseInt(document.getElementById('cutoutScale').value) / 100;
-  pc.width = rawCropData.width * s;
-  pc.height = rawCropData.height * s;
-  const pctx = pc.getContext('2d');
-  pctx.clearRect(0, 0, pc.width, pc.height);
-  pctx.drawImage(temp, 0, 0, pc.width, pc.height);
-}
-
-function updateCutoutScale() {
-  document.getElementById('cutoutScaleVal').textContent = (parseInt(document.getElementById('cutoutScale').value)/100).toFixed(1);
-  updateCutoutPreview();
-}
-
-function updateCutoutPosition() {
-  document.getElementById('cutoutXVal').textContent = document.getElementById('cutoutOffsetX').value;
-  document.getElementById('cutoutYVal').textContent = document.getElementById('cutoutOffsetY').value;
-  if (croppedTextImage) applyCutoutToTag();
-}
-
-function applyCutoutToTag() {
-  if (!rawCropData) return;
-  const tol = parseInt(document.getElementById('cutoutTolerance').value);
-  const s = parseInt(document.getElementById('cutoutScale').value) / 100;
-  const ox = parseInt(document.getElementById('cutoutOffsetX').value);
-  const oy = parseInt(document.getElementById('cutoutOffsetY').value);
-  
-  const temp = document.createElement('canvas');
-  temp.width = rawCropData.width; temp.height = rawCropData.height;
-  const tctx = temp.getContext('2d');
-  tctx.drawImage(rawCropData.canvas, 0, 0);
-  const id = tctx.getImageData(0, 0, temp.width, temp.height);
-  removeImageBackground(id, tol);
-  tctx.putImageData(id, 0, 0);
-  
-  croppedTextImage = { canvas: temp, scale: s, offsetX: ox, offsetY: oy };
-  
-  const title = tagTitle.value || '';
-  [tagNormal, tagActive].forEach(tag => {
-    tag.querySelectorAll('.cropped-text-img').forEach(el => el.remove());
-    const span = tag.querySelector('span');
-    if (title) {
-      span.innerHTML = formatTitle(title);
-      span.style.display = 'none';
-    }
-    const img = document.createElement('canvas');
-    img.className = 'cropped-text-img';
-    img.width = temp.width * s;
-    img.height = temp.height * s;
-    img.style.position = 'absolute';
-    img.style.left = ox + 'px';
-    img.style.top = oy + 'px';
-    img.getContext('2d').drawImage(temp, 0, 0, img.width, img.height);
-    tag.appendChild(img);
-  });
-  showToast('📌 已合成到标签');
-}
-
-// ===== 下载 =====
-function downloadTag(state) {
-  const tag = state === 'active' ? tagActive : tagNormal;
-  const canvas = document.createElement('canvas');
-  canvas.width = 180 * 2;
-  canvas.height = 78 * 2;
-  const ctx = canvas.getContext('2d');
-  ctx.scale(2, 2);
-  
-  // 渲染标签（html2canvas风格：用svg）
-  const clone = tag.cloneNode(true);
-  // 移除guide
-  clone.querySelectorAll('.tag-guide').forEach(el => el.remove());
-  
-  const styles = getComputedStyle(tag);
-  const borderRadius = styles.borderRadius;
-  const bg = styles.background;
-  const color = styles.color;
-  const fontFam = styles.fontFamily;
-  const boxShadow = styles.boxShadow;
-  const border = styles.border;
-  
-  // 渲染文字
-  const textSpan = clone.querySelector('span') || {};
-  const textContent = (textSpan.textContent || '');
-  
-  // 检查是否有裁剪文字
-  const croppedImg = clone.querySelector('.cropped-text-img');
-  
-  ctx.fillStyle = bg === 'transparent' || bg === 'rgba(0, 0, 0, 0)' ? bg : bg;
-  ctx.beginPath();
-  if (borderRadius) {
-    const r = parseInt(borderRadius);
-    ctx.roundRect(0, 0, 180, 78, r);
-  } else {
-    ctx.rect(0, 0, 180, 78);
-  }
-  ctx.fill();
-  
-  // 画边框
-  if (border && border !== 'none') {
-    ctx.strokeStyle = styles.borderColor;
-    ctx.lineWidth = parseInt(styles.borderWidth) * 2;
-    ctx.stroke();
-  }
-  
-  // 渲染裁剪文字图片
-  if (croppedTextImage) {
-    const ci = croppedTextImage;
-    // clone里没有cropped-text-img，用存储的数据
-    ctx.drawImage(ci.canvas, ci.offsetX, ci.offsetY, ci.canvas.width * (ci.scale || 1), ci.canvas.height * (ci.scale || 1));
-  }
-  
-  // 渲染文字
-  if (textContent && !croppedTextImage) {
-    ctx.fillStyle = color;
-    ctx.font = `700 28px ${fontFam}`;
-    ctx.textBaseline = 'middle';
-    ctx.fillText(textContent, 30, 39);
-  }
-  
-  canvas.toBlob(blob => {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `channel-tag-${state}.png`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    showToast(`⬇ 已下载 ${state === 'active' ? '选中' : '常态'}标签`);
-  });
-}
-
-// ===== 安装字体 =====
-function installFont(file) {
-  if (!file) return;
-  const name = prompt('字体名称：', file.name.replace(/\.(ttf|otf|woff|woff2)$/i, ''));
-  if (!name) return;
-  
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    const fontFace = new FontFace(name, `url(${e.target.result})`);
-    fontFace.load().then(loaded => {
-      document.fonts.add(loaded);
-      const opt = document.createElement('option');
-      opt.value = `'${name}',sans-serif`;
-      opt.textContent = name + ' (已安装)';
-      opt.style.color = '#6366f1';
-      tagFont.insertBefore(opt, tagFont.firstChild);
-      tagFont.value = opt.value;
-      updatePreview();
-      showToast(`✅ 字体 "${name}" 已安装`);
-    }).catch(err => {
-      showToast(`❌ 字体加载失败: ${err.message}`);
-    });
-  };
-  reader.readAsDataURL(file);
-}
-
-// ===== 初始化 =====
-updatePreview();
+.channel-tag:hover, .channel-tag.active {
+  background: "+aBg.value+"; color: "+aText.value+";
+  box-shadow: 0 0 0 3px "+aBg.value+", 0 8px 24px rgba(0,0,0,0.3);
+}"}
+function copyCSS(){navigator.clipboard.writeText(document.getElementById("cssCode").textContent);toast("已复制到剪贴板!")}
+// Ref image
+var refImg=null,cropStart=null,cropEnd=null,rawCrop=null;
+function loadRef(f){if(!f)return;var r=new FileReader();r.onload=function(e){var i=new Image();i.onload=function(){refImg=i;$extractBtn.disabled=false;$cropBtn.disabled=false;toast("📷 参考图已加载")};i.src=e.target.result};r.readAsDataURL(f)}
+// Extract
+function extractColors(){if(!refImg)return toast("请先上传参考图");var c=document.createElement("canvas"),sz=50;c.width=sz;c.height=sz;var ctx=c.getContext("2d");ctx.drawImage(refImg,0,0,sz,sz);var d=ctx.getImageData(0,0,sz,sz).data,samples=[];for(var i=0;i<d.length;i+=4)samples.push({r:d[i],g:d[i+1],b:d[i+2]});function km(pts,k,iters){var centroids=pts.slice(0,k).map(function(p){return{r:p.r,g:p.g,b:p.b}});for(var iter=0;iter<iters;iter++){var cl=[];for(var j=0;j<k;j++)cl.push([]);for(var pi=0;pi<pts.length;pi++){var p=pts[pi];var best=0,bestD=Infinity;for(var ci=0;ci<centroids.length;ci++){var cc=centroids[ci];var dr=p.r-cc.r,dg=p.g-cc.g,db=p.b-cc.b,dd=dr*dr+dg*dg+db*db;if(dd<bestD){bestD=dd;best=ci}}cl[best].push(p)}centroids=cl.map(function(cl){if(!cl.length)return{r:0,g:0,b:0};return{r:Math.round(cl.reduce(function(s,p){return s+p.r},0)/cl.length),g:Math.round(cl.reduce(function(s,p){return s+p.g},0)/cl.length),b:Math.round(cl.reduce(function(s,p){return s+p.b},0)/cl.length)}})}return centroids.sort(function(a,b){return(b.r+b.g+b.b)-(a.r+a.g+a.b)})}var cols=km(samples,5,5),tc=cols[2];var hex="#"+[tc.r,tc.g,tc.b].map(function(v){return v.toString(16).padStart(2,"0")}).join("");nText.value=hex;toast("🎨 已提取配色（仅文字色）");updateTag()}
+// Crop
+function startCrop(){if(!refImg)return toast("请先上传参考图");document.getElementById("cutoutArea").classList.add("hidden");var cv=document.getElementById("cropCanvas"),mw=380;cv._s=Math.min(1,mw/refImg.width);cv.width=Math.round(refImg.width*cv._s);cv.height=Math.round(refImg.height*cv._s);var ctx=cv.getContext("2d");ctx.drawImage(refImg,0,0,cv.width,cv.height);cropStart=null;cropEnd=null;cv.onmousedown=function(e){cropStart={x:e.offsetX,y:e.offsetY};cropEnd=null};cv.onmousemove=function(e){if(!cropStart)return;cropEnd={x:e.offsetX,y:e.offsetY};ctx.drawImage(refImg,0,0,cv.width,cv.height);ctx.strokeStyle="#22c55e";ctx.lineWidth=2;ctx.setLineDash([6,3]);var x=Math.min(cropStart.x,cropEnd.x),y=Math.min(cropStart.y,cropEnd.y),w=Math.abs(cropEnd.x-cropStart.x),h=Math.abs(cropEnd.y-cropStart.y);ctx.strokeRect(x,y,w,h)};cv.onmouseup=function(e){cropEnd={x:e.offsetX,y:e.offsetY}};cv.onmouseleave=function(e){if(cropStart&&!cropEnd)cropEnd={x:e.offsetX,y:e.offsetY}};document.getElementById("cropArea").classList.remove("hidden");toast("🖱 框选文字区域")}
+function confirmCrop(){if(!cropStart||!cropEnd)return toast("请先框选区域");var cv=document.getElementById("cropCanvas"),s=cv._s;var x=Math.round(Math.min(cropStart.x,cropEnd.x)/s),y=Math.round(Math.min(cropStart.y,cropEnd.y)/s);var w=Math.round(Math.abs(cropEnd.x-cropStart.x)/s),h=Math.round(Math.abs(cropEnd.y-cropStart.y)/s);if(w<5||h<5)return toast("框选区域太小");var cc=document.createElement("canvas");cc.width=w;cc.height=h;cc.getContext("2d").drawImage(refImg,x,y,w,h,0,0,w,h);rawCrop={canvas:cc,w:w,h:h};document.getElementById("cropArea").classList.add("hidden");document.getElementById("cutoutArea").classList.remove("hidden");upCutPrev()}
+function cancelCrop(){document.getElementById("cropArea").classList.add("hidden");cropStart=null;cropEnd=null}
+function rmBg(id,tol){var d=id.data,w=id.width,h=id.height;var corners=[{r:d[0],g:d[1],b:d[2]},{r:d[(w-1)*4],g:d[(w-1)*4+1],b:d[(w-1)*4+2]},{r:d[(h-1)*w*4],g:d[(h-1)*w*4+1],b:d[(h-1)*w*4+2]},{r:d[((h-1)*w+w-1)*4],g:d[((h-1)*w+w-1)*4+1],b:d[((h-1)*w+w-1)*4+2]}];var ab={r:0,g:0,b:0};for(var ci=0;ci<4;ci++){ab.r+=corners[ci].r;ab.g+=corners[ci].g;ab.b+=corners[ci].b}ab.r=Math.round(ab.r/4);ab.g=Math.round(ab.g/4);ab.b=Math.round(ab.b/4);for(var i=0;i<d.length;i+=4){var dr=d[i]-ab.r,dg=d[i+1]-ab.g,db=d[i+2]-ab.b;if(Math.sqrt(dr*dr+dg*dg+db*db)<tol*4.5)d[i+3]=0}}
+function upCutPrev(){if(!rawCrop)return;var tol=+document.getElementById("tol").value;document.getElementById("tolVal").textContent=tol;var s=+document.getElementById("cutS").value/100;document.getElementById("cutSVal").textContent=s.toFixed(1);var t=document.createElement("canvas");t.width=rawCrop.w;t.height=rawCrop.h;var tctx=t.getContext("2d");tctx.drawImage(rawCrop.canvas,0,0);var id=tctx.getImageData(0,0,t.width,t.height);rmBg(id,tol);tctx.putImageData(id,0,0);var pv=document.getElementById("cutoutPreview");pv.width=t.width*s;pv.height=t.height*s;var pctx=pv.getContext("2d");pctx.clearRect(0,0,pv.width,pv.height);pctx.drawImage(t,0,0,pv.width,pv.height)}
+var cutoutApplied=false;
+function applyCutout(){if(!rawCrop)return;var tol=+document.getElementById("tol").value;var s=+document.getElementById("cutS").value/100;var ox=+document.getElementById("cutX").value,oy=+document.getElementById("cutY").value;document.getElementById("cutXVal").textContent=ox;document.getElementById("cutYVal").textContent=oy;var t=document.createElement("canvas");t.width=rawCrop.w;t.height=rawCrop.h;var tctx=t.getContext("2d");tctx.drawImage(rawCrop.canvas,0,0);var id=tctx.getImageData(0,0,t.width,t.height);rmBg(id,tol);tctx.putImageData(id,0,0);var tags=[$tagN,$tagA];for(var ti=0;ti<tags.length;ti++){var tag=tags[ti];var els=tag.querySelectorAll(".cutout");for(var ei=0;ei<els.length;ei++)els[ei].remove();if($tagTitle.value)tag.querySelector("span").style.display="none";var c=document.createElement("canvas");c.className="cutout";c.width=t.width*s;c.height=t.height*s;c.style.position="absolute";c.style.left=ox+"px";c.style.top=oy+"px";c.style.pointerEvents="none";c.getContext("2d").drawImage(t,0,0,c.width,c.height);tag.appendChild(c)}cutoutApplied=true;toast("📌 已合成到标签")}
+// Download
+function downloadTag(state){var tag=state==="active"?$tagA:$tagN;var cv=document.createElement("canvas");cv.width=360;cv.height=156;var ctx=cv.getContext("2d");ctx.scale(2,2);var cs=getComputedStyle(tag);var br=parseInt(cs.borderRadius)||0,bg=cs.background,color=cs.color;var font=cs.fontFamily,bw=parseInt(cs.borderWidth)||0;var txt=tag.querySelector("span")?tag.querySelector("span").textContent:"";var cutoutEl=tag.querySelector(".cutout");function rr(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath()}
+if(bg&&bg!=="rgba(0, 0, 0, 0)"&&bg!=="transparent"){ctx.fillStyle=bg;if(br)rr(ctx,0,0,180,78,br);else ctx.fillRect(0,0,180,78);ctx.fill()}
+if(bw>0){ctx.strokeStyle=cs.borderColor;ctx.lineWidth=bw;if(br)rr(ctx,0,0,180,78,br);else ctx.strokeRect(0,0,180,78);ctx.stroke()}
+if(cutoutEl){var s2=cutoutEl.width/rawCrop.w||1;ctx.drawImage(rawCrop.canvas,parseInt(cutoutEl.style.left)||0,parseInt(cutoutEl.style.top)||0,cutoutEl.width,cutoutEl.height)}
+if(txt&&!cutoutEl){ctx.fillStyle=color;ctx.font="700 28px "+font;ctx.textBaseline="middle";ctx.fillText(txt,30,39)}
+cv.toBlob(function(blob){var url=URL.createObjectURL(blob);var a=document.createElement("a");a.href=url;a.download="channel-tag-"+state+".png";document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);toast("⬇ 已下载 "+(state==="active"?"选中":"常态")+"标签")})}
+// Font install
+function installFont(f){if(!f)return;var nm=prompt("字体名称：",f.name.replace(/\.(ttf|otf|woff|woff2)$/i,""));if(!nm)return;var r=new FileReader();r.onload=function(e){var ff=new FontFace(nm,"url("+e.target.result+")");ff.load().then(function(loaded){document.fonts.add(loaded);var o=document.createElement("option");o.value="'"+nm+"',sans-serif";o.textContent=nm+" (已安装)";o.style.color="#6366f1";$tagFont.insertBefore(o,$tagFont.firstChild);$tagFont.value=o.value;updateTag();toast("✅ 字体已安装")}).catch(function(err){toast("❌ 失败: "+err.message)})};r.readAsDataURL(f)}
+updateTag();
 </script>
 </body>
 </html>
