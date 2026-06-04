@@ -17,7 +17,7 @@ h1{font-size:24px;margin-bottom:4px}
 .rw{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
 .rw>label{font-size:12px;color:#888;min-width:60px}
 input[type=text]{background:#252540;border:1px solid #333;color:#fff;padding:6px 10px;border-radius:6px;font-size:13px;width:100%}
-input[type=color]{-webkit-appearance:none;border:none;width:36px;height:36px;border-radius:6px;cursor:pointer;background:transparent}
+input[type=color]{-webkit-appearance:none;border:none;width:36px;height:36px;border-radius:6px;cursor:pointer}
 input[type=color]::-webkit-color-swatch-wrapper{padding:0}
 input[type=color]::-webkit-color-swatch{border:1px solid #444;border-radius:6px}
 select{background:#252540;border:1px solid #333;color:#fff;padding:6px 10px;border-radius:6px;font-size:13px;cursor:pointer}
@@ -33,12 +33,9 @@ select{background:#252540;border:1px solid #333;color:#fff;padding:6px 10px;bord
 .preset-btns{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 .preset-btns button{padding:4px 12px;font-size:11px;border-radius:4px;border:1px solid #444;background:#1e1e3a;color:#ccc;cursor:pointer}
 .preset-btns button:hover{border-color:#6366f1}
-.style-btns{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
-.style-btns button{padding:4px 12px;font-size:11px;border-radius:4px;border:1px solid #444;background:#1e1e3a;color:#ccc;cursor:pointer}
-.style-btns button.active{border-color:#6366f1;background:#6366f1;color:#fff}
 .tag-wrap{display:flex;flex-direction:column;align-items:center;gap:8px}
 .tag-lbl{font-size:11px;color:#666}
-.tag{width:180px;height:78px;border-radius:12px;display:flex;align-items:center;justify-content:flex-start;padding:24px 30px;font-size:28px;line-height:28px;font-weight:700;box-sizing:border-box;position:relative;overflow:hidden;transition:all .15s}
+.tag{width:180px;height:78px;border-radius:12px;display:flex;align-items:center;justify-content:flex-start;padding:24px 30px;font-size:28px;line-height:28px;font-weight:700;box-sizing:border-box;position:relative;overflow:hidden;cursor:pointer;transition:all .3s}
 .guide-box{position:absolute;left:30px;top:24px;width:120px;height:30px;border:1px dashed rgba(255,255,255,.2);border-radius:4px;pointer-events:none}
 .guide-box span{position:absolute;right:2px;bottom:0;font-size:8px;color:rgba(255,255,255,.2);font-weight:400;line-height:1}
 .btns-row{display:flex;gap:8px;flex-wrap:wrap}
@@ -61,10 +58,11 @@ select{background:#252540;border:1px solid #333;color:#fff;padding:6px 10px;bord
 <div class="panel">
   <div class="sec">
     <div class="sec-title">🎨 设计参数</div>
-    <div class="rw"><label>标签标题</label><input type="text" id="tagTitle" value="设计频道" maxlength="8" oninput="updateTag()" placeholder="输入标签标题..."></div>
+    <div class="rw"><label>标签标题</label><input type="text" id="tagTitle" value="设计频道" maxlength="8" oninput="updateTag()"></div>
     <div class="rw">
       <label>文案字体</label>
       <select id="tagFont" onchange="updateTag()">
+        <option value="'MFShangYa Noncommercial Regular',sans-serif">造字工房尚雅</option>
         <option value="'PingFang SC','Microsoft YaHei',sans-serif">苹方-简</option>
         <option value="'PingFang TC','Microsoft YaHei',sans-serif">苹方-繁</option>
         <option value="'Heiti SC','Microsoft YaHei',sans-serif">黑体-简</option>
@@ -86,109 +84,256 @@ select{background:#252540;border:1px solid #333;color:#fff;padding:6px 10px;bord
       <button class="btn-sm btn-ghost" onclick="document.getElementById('fontFileInput').click()">📁 安装字体</button>
     </div>
   </div>
+
   <div class="sec">
     <div class="sec-title">🎨 颜色设置</div>
     <div class="color-row">
-      <div class="color-cell"><label>常态背景</label><input type="color" id="nBg" value="#2a2a4a" oninput="updateTag()"><span class="hex" id="nBgHex">#2a2a4a</span></div>
-      <div class="color-cell"><label>常态文字</label><input type="color" id="nText" value="#a0a0c0" oninput="updateTag()"><span class="hex" id="nTextHex">#a0a0c0</span></div>
-      <div class="color-cell"><label>选中背景</label><input type="color" id="aBg" value="#6366f1" oninput="updateTag()"><span class="hex" id="aBgHex">#6366f1</span></div>
+      <div class="color-cell"><label>常态文字</label><input type="color" id="nText" value="#dedfdf" oninput="updateTag()"><span class="hex" id="nTextHex">#dedfdf</span></div>
+      <div class="color-cell"><label>选中背景</label><input type="color" id="aBg" value="#f43f5e" oninput="updateTag()"><span class="hex" id="aBgHex">#f43f5e</span></div>
       <div class="color-cell"><label>选中文字</label><input type="color" id="aText" value="#ffffff" oninput="updateTag()"><span class="hex" id="aTextHex">#ffffff</span></div>
     </div>
     <div style="font-size:11px;color:#666;margin-top:10px;">预设配色</div>
-    <div class="preset-btns"><button onclick="preset('purple')">紫色</button><button onclick="preset('blue')">蓝色</button><button onclick="preset('green')">绿色</button><button onclick="preset('orange')">橙色</button><button onclick="preset('dark')">暗黑</button></div>
-    <div style="font-size:11px;color:#666;margin-top:10px;">标签样式</div>
-    <div class="style-btns" id="styleBtns"><button class="active" onclick="setStyle('solid',this)">Solid</button><button onclick="setStyle('outline',this)">Outline</button><button onclick="setStyle('soft',this)">Soft</button><button onclick="setStyle('pill',this)">Pill</button><button onclick="setStyle('gradient',this)">Gradient</button></div>
+    <div class="preset-btns">
+      <button onclick="preset('rose')">玫红</button>
+      <button onclick="preset('purple')">紫色</button>
+      <button onclick="preset('blue')">蓝色</button>
+      <button onclick="preset('green')">绿色</button>
+      <button onclick="preset('orange')">橙色</button>
+      <button onclick="preset('dark')">暗黑</button>
+    </div>
   </div>
+
   <div class="sec">
     <div class="sec-title">🖼 参考图提取配色 & 文字</div>
-    <div class="rw"><button class="btn" onclick="document.getElementById('refInput').click()">📤 上传参考图</button><input type="file" id="refInput" accept="image/*" class="hidden" onchange="loadRef(this.files[0])"><button class="btn" id="extractBtn" disabled onclick="extractColors()">🎨 提取配色</button><button class="btn" id="cropBtn" disabled onclick="startCrop()">🔪 切图合成</button></div>
-    <div id="cropArea" class="hidden" style="margin-top:8px"><canvas id="cropCanvas" class="canvas-crop"></canvas><div style="margin-top:6px;display:flex;gap:6px"><button class="btn btn-sm" onclick="confirmCrop()">✅ 确认框选</button><button class="btn-sm btn-ghost" onclick="cancelCrop()">取消</button></div></div>
-    <div id="cutoutArea" class="hidden" style="margin-top:8px"><canvas id="cutoutPreview" style="max-width:100%;border:1px solid #333;border-radius:6px"></canvas>
+    <div class="rw">
+      <button class="btn" onclick="document.getElementById('refInput').click()">📤 上传参考图</button>
+      <input type="file" id="refInput" accept="image/*" class="hidden" onchange="loadRef(this.files[0])">
+      <button class="btn" id="extractBtn" disabled onclick="extractColors()">🎨 提取配色</button>
+      <button class="btn" id="cropBtn" disabled onclick="startCrop()">🔪 切图合成</button>
+    </div>
+    <div id="cropArea" class="hidden" style="margin-top:8px">
+      <canvas id="cropCanvas" class="canvas-crop"></canvas>
+      <div style="margin-top:6px;display:flex;gap:6px">
+        <button class="btn btn-sm" onclick="confirmCrop()">✅ 确认框选</button>
+        <button class="btn-sm btn-ghost" onclick="cancelCrop()">取消</button>
+      </div>
+    </div>
+    <div id="cutoutArea" class="hidden" style="margin-top:8px">
+      <canvas id="cutoutPreview" style="max-width:100%;border:1px solid #333;border-radius:6px"></canvas>
       <div class="slider-row"><label>去背景强度</label><input type="range" id="tol" min="10" max="100" value="40" oninput="upCutPrev()"><span id="tolVal">40</span></div>
       <div class="slider-row"><label>缩放</label><input type="range" id="cutS" min="50" max="200" value="100" oninput="upCutPrev()"><span id="cutSVal">1.0</span></div>
       <div class="slider-row"><label>X偏移</label><input type="range" id="cutX" min="0" max="100" value="0" oninput="applyCutout()"><span id="cutXVal">0</span>px</div>
       <div class="slider-row"><label>Y偏移</label><input type="range" id="cutY" min="0" max="54" value="0" oninput="applyCutout()"><span id="cutYVal">0</span>px</div>
-      <button class="btn btn-sm" onclick="applyCutout()" style="margin-top:6px">📌 合成到标签</button></div>
+      <button class="btn btn-sm" onclick="applyCutout()" style="margin-top:6px">📌 合成到标签</button>
+    </div>
   </div>
 </div>
+
 <div class="preview-area">
   <div class="sec-title" style="align-self:flex-start">👁 实时预览</div>
-  <div class="tag-wrap"><span class="tag-lbl">✦ 常态</span><div class="tag" id="tagN"><span id="tagNText">设计频道</span><div class="guide-box"><span>规范区 120×30</span></div></div></div>
-  <div class="tag-wrap"><span class="tag-lbl">✦ 选中状态</span><div class="tag" id="tagA"><span id="tagAText">设计频道</span><div class="guide-box"><span>规范区 120×30</span></div></div></div>
-  <div class="btns-row"><button class="btn" onclick="downloadTag('normal')">⬇ 下载常态标签 (PNG)</button><button class="btn" onclick="downloadTag('active')">⬇ 下载选中标签 (PNG)</button></div>
-  <div class="sec" style="width:100%;margin-top:0"><div class="sec-title">✦ 尺寸: 180 × 78 px</div><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">📋 CSS 代码 <button class="btn-sm btn-ghost" onclick="copyCSS()">📋 复制</button></div><div class="css-panel" id="cssCode"></div></div>
+  <div class="tag-wrap">
+    <span class="tag-lbl">✦ 常态</span>
+    <div class="tag" id="tagN"><span id="tagNText">设计频道</span><div class="guide-box"><span>规范区 120×30</span></div></div>
+  </div>
+  <div class="tag-wrap">
+    <span class="tag-lbl">✦ 选中状态</span>
+    <div class="tag" id="tagA"><span id="tagAText">设计频道</span><div class="guide-box"><span>规范区 120×30</span></div></div>
+  </div>
+  <div class="btns-row">
+    <button class="btn" onclick="downloadTag('normal')">⬇ 下载常态标签 (PNG)</button>
+    <button class="btn" onclick="downloadTag('active')">⬇ 下载选中标签 (PNG)</button>
+  </div>
+  <div class="sec" style="width:100%;margin-top:0">
+    <div class="sec-title">✦ 尺寸: 180 × 78 px</div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">📋 CSS 代码 <button class="btn-sm btn-ghost" onclick="copyCSS()">📋 复制</button></div>
+    <div class="css-panel" id="cssCode"></div>
+  </div>
 </div>
 </div>
+
 <div class="toast" id="toast"></div>
 <input type="file" id="fontFileInput" accept=".ttf,.otf,.woff,.woff2" class="hidden" onchange="installFont(this.files[0])">
+
 <script>
 var $tagN=document.getElementById("tagN"),$tagA=document.getElementById("tagA");
 var $tagNText=document.getElementById("tagNText"),$tagAText=document.getElementById("tagAText");
 var $tagTitle=document.getElementById("tagTitle"),$tagFont=document.getElementById("tagFont");
-var nBg=document.getElementById("nBg"),nText=document.getElementById("nText");
-var aBg=document.getElementById("aBg"),aText=document.getElementById("aText");
-var nBgHex=document.getElementById("nBgHex"),nTextHex=document.getElementById("nTextHex");
-var aBgHex=document.getElementById("aBgHex"),aTextHex=document.getElementById("aTextHex");
+var nText=document.getElementById("nText"),aBg=document.getElementById("aBg"),aText=document.getElementById("aText");
+var nTextHex=document.getElementById("nTextHex"),aBgHex=document.getElementById("aBgHex"),aTextHex=document.getElementById("aTextHex");
 var $extractBtn=document.getElementById("extractBtn"),$cropBtn=document.getElementById("cropBtn");
 var $toast=document.getElementById("toast");
 var _t;
 function toast(m){$toast.textContent=m;$toast.classList.add("on");clearTimeout(_t);_t=setTimeout(function(){$toast.classList.remove("on")},2000)}
 function fmtText(t){if(!t)return"";var h="";for(var i=0;i<t.length;i++){var c=t[i];h+=/\d/.test(c)?'<span class="num-compact">'+c+"</span>":c}return h}
-var curStyle="solid";
-var presets={purple:{nBg:"#2a2a4a",nText:"#a0a0c0",aBg:"#6366f1",aText:"#ffffff"},blue:{nBg:"#1a2a3a",nText:"#88aacc",aBg:"#3b82f6",aText:"#ffffff"},green:{nBg:"#1a2a2a",nText:"#88ccaa",aBg:"#22c55e",aText:"#ffffff"},orange:{nBg:"#2a2a1a",nText:"#ccaa88",aBg:"#f59e0b",aText:"#ffffff"},dark:{nBg:"#1a1a1a",nText:"#888888",aBg:"#444444",aText:"#ffffff"}};
-function preset(k){var p=presets[k];nBg.value=p.nBg;nText.value=p.nText;aBg.value=p.aBg;aText.value=p.aText;updateTag()}
-function setStyle(s,btn){curStyle=s;var btns=document.querySelectorAll("#styleBtns button");for(var i=0;i<btns.length;i++)btns[i].classList.remove("active");btn.classList.add("active");updateTag()}
-function applyStyleToTag(tag,state){
-  var abg=aBg.value,atxt=aText.value,ntxt=nText.value,nbg=nBg.value;
-  tag.style.transition="all .15s";tag.style.boxShadow="none";tag.style.border="none";tag.style.borderRadius="12px";tag.style.backdropFilter="none";
-  if(state==="normal"){if(curStyle==="solid"){tag.style.background=nbg;tag.style.color=ntxt}else if(curStyle==="outline"){tag.style.background="transparent";tag.style.color=ntxt;tag.style.border="2px solid "+ntxt}else if(curStyle==="soft"){tag.style.background=nbg+"33";tag.style.color=ntxt;tag.style.backdropFilter="blur(4px)"}else if(curStyle==="pill"){tag.style.background=nbg;tag.style.color=ntxt;tag.style.borderRadius="39px"}else if(curStyle==="gradient"){tag.style.background="linear-gradient(135deg,"+nbg+","+abg+")";tag.style.color=ntxt}}
-  else{if(curStyle==="solid"){tag.style.background=abg;tag.style.color=atxt;tag.style.boxShadow="0 0 0 3px "+abg+",0 8px 24px rgba(0,0,0,.3)"}else if(curStyle==="outline"){tag.style.background="transparent";tag.style.color=atxt;tag.style.border="3px solid "+atxt}else if(curStyle==="soft"){tag.style.background=abg+"33";tag.style.color=atxt;tag.style.backdropFilter="blur(4px)";tag.style.boxShadow="0 8px 24px rgba(0,0,0,.3)"}else if(curStyle==="pill"){tag.style.background=abg;tag.style.color=atxt;tag.style.borderRadius="39px";tag.style.boxShadow="0 0 0 3px "+abg+",0 8px 24px rgba(0,0,0,.3)"}else if(curStyle==="gradient"){tag.style.background="linear-gradient(135deg,"+abg+","+nbg+")";tag.style.color=atxt;tag.style.boxShadow="0 0 0 3px "+abg+",0 8px 24px rgba(0,0,0,.3)"}}
-}
+
+var presets={
+  rose:{nText:"#dedfdf",aBg:"#f43f5e",aText:"#ffffff"},
+  purple:{nText:"#a0a0c0",aBg:"#6366f1",aText:"#ffffff"},
+  blue:{nText:"#88aacc",aBg:"#3b82f6",aText:"#ffffff"},
+  green:{nText:"#88ccaa",aBg:"#22c55e",aText:"#ffffff"},
+  orange:{nText:"#ccaa88",aBg:"#f59e0b",aText:"#ffffff"},
+  dark:{nText:"#888888",aBg:"#444444",aText:"#ffffff"}
+};
+function preset(k){var p=presets[k];nText.value=p.nText;aBg.value=p.aBg;aText.value=p.aText;updateTag()}
+
 function updateTag(){
   var t=$tagTitle.value,font=$tagFont.value,txt=fmtText(t);
   $tagNText.innerHTML=txt;$tagAText.innerHTML=txt;
   $tagN.style.fontFamily=font;$tagA.style.fontFamily=font;
-  nBgHex.textContent=nBg.value;nTextHex.textContent=nText.value;
-  aBgHex.textContent=aBg.value;aTextHex.textContent=aText.value;
-  applyStyleToTag($tagN,"normal");applyStyleToTag($tagA,"active");
-  updateCSS()
+  nTextHex.textContent=nText.value;aBgHex.textContent=aBg.value;aTextHex.textContent=aText.value;
+
+  // 常态：透明底，无边框，灰色文字
+  $tagN.style.background="transparent";
+  $tagN.style.color=nText.value;
+  $tagN.style.border="none";
+  $tagN.style.boxShadow="none";
+
+  // 选中：纯色底 + box-shadow
+  $tagA.style.background=aBg.value;
+  $tagA.style.color=aText.value;
+  $tagA.style.border="none";
+  $tagA.style.boxShadow="0 0 0 3px "+aBg.value+", 0 8px 24px rgba(0,0,0,0.3)";
+
+  updateCSS();
 }
-function updateCSS(){var font=$tagFont.value;document.getElementById("cssCode").textContent=".channel-tag {
-  width: 180px; height: 78px; border-radius: 12px;
-  display: flex; align-items: center; justify-content: flex-start;
-  padding: 24px 30px; font-size: 28px; line-height: 28px;
-  font-weight: 700; font-family: "+font+";
-  box-sizing: border-box; transition: all 0.3s ease;
-  background: "+$tagN.style.background+";
+
+function updateCSS(){
+  var font=$tagFont.value;
+  document.getElementById("cssCode").textContent=
+".channel-tag {
+  width: 180px;
+  height: 78px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 24px 30px;
+  font-size: 28px;
+  line-height: 28px;
+  font-weight: 700;
+  font-family: "+font+";
+  box-sizing: border-box;
+  background: transparent;
+  border: none;
   color: "+nText.value+";
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
-.channel-tag:hover, .channel-tag.active {
-  background: "+aBg.value+"; color: "+aText.value+";
+
+.channel-tag:hover,
+.channel-tag.active {
+  background: "+aBg.value+";
+  color: "+aText.value+";
   box-shadow: 0 0 0 3px "+aBg.value+", 0 8px 24px rgba(0,0,0,0.3);
-}"}
+}";
+}
 function copyCSS(){navigator.clipboard.writeText(document.getElementById("cssCode").textContent);toast("已复制到剪贴板!")}
-// Ref image
+
 var refImg=null,cropStart=null,cropEnd=null,rawCrop=null;
-function loadRef(f){if(!f)return;var r=new FileReader();r.onload=function(e){var i=new Image();i.onload=function(){refImg=i;$extractBtn.disabled=false;$cropBtn.disabled=false;toast("📷 参考图已加载")};i.src=e.target.result};r.readAsDataURL(f)}
-// Extract
-function extractColors(){if(!refImg)return toast("请先上传参考图");var c=document.createElement("canvas"),sz=50;c.width=sz;c.height=sz;var ctx=c.getContext("2d");ctx.drawImage(refImg,0,0,sz,sz);var d=ctx.getImageData(0,0,sz,sz).data,samples=[];for(var i=0;i<d.length;i+=4)samples.push({r:d[i],g:d[i+1],b:d[i+2]});function km(pts,k,iters){var centroids=pts.slice(0,k).map(function(p){return{r:p.r,g:p.g,b:p.b}});for(var iter=0;iter<iters;iter++){var cl=[];for(var j=0;j<k;j++)cl.push([]);for(var pi=0;pi<pts.length;pi++){var p=pts[pi];var best=0,bestD=Infinity;for(var ci=0;ci<centroids.length;ci++){var cc=centroids[ci];var dr=p.r-cc.r,dg=p.g-cc.g,db=p.b-cc.b,dd=dr*dr+dg*dg+db*db;if(dd<bestD){bestD=dd;best=ci}}cl[best].push(p)}centroids=cl.map(function(cl){if(!cl.length)return{r:0,g:0,b:0};return{r:Math.round(cl.reduce(function(s,p){return s+p.r},0)/cl.length),g:Math.round(cl.reduce(function(s,p){return s+p.g},0)/cl.length),b:Math.round(cl.reduce(function(s,p){return s+p.b},0)/cl.length)}})}return centroids.sort(function(a,b){return(b.r+b.g+b.b)-(a.r+a.g+a.b)})}var cols=km(samples,5,5),tc=cols[2];var hex="#"+[tc.r,tc.g,tc.b].map(function(v){return v.toString(16).padStart(2,"0")}).join("");nText.value=hex;toast("🎨 已提取配色（仅文字色）");updateTag()}
-// Crop
-function startCrop(){if(!refImg)return toast("请先上传参考图");document.getElementById("cutoutArea").classList.add("hidden");var cv=document.getElementById("cropCanvas"),mw=380;cv._s=Math.min(1,mw/refImg.width);cv.width=Math.round(refImg.width*cv._s);cv.height=Math.round(refImg.height*cv._s);var ctx=cv.getContext("2d");ctx.drawImage(refImg,0,0,cv.width,cv.height);cropStart=null;cropEnd=null;cv.onmousedown=function(e){cropStart={x:e.offsetX,y:e.offsetY};cropEnd=null};cv.onmousemove=function(e){if(!cropStart)return;cropEnd={x:e.offsetX,y:e.offsetY};ctx.drawImage(refImg,0,0,cv.width,cv.height);ctx.strokeStyle="#22c55e";ctx.lineWidth=2;ctx.setLineDash([6,3]);var x=Math.min(cropStart.x,cropEnd.x),y=Math.min(cropStart.y,cropEnd.y),w=Math.abs(cropEnd.x-cropStart.x),h=Math.abs(cropEnd.y-cropStart.y);ctx.strokeRect(x,y,w,h)};cv.onmouseup=function(e){cropEnd={x:e.offsetX,y:e.offsetY}};cv.onmouseleave=function(e){if(cropStart&&!cropEnd)cropEnd={x:e.offsetX,y:e.offsetY}};document.getElementById("cropArea").classList.remove("hidden");toast("🖱 框选文字区域")}
-function confirmCrop(){if(!cropStart||!cropEnd)return toast("请先框选区域");var cv=document.getElementById("cropCanvas"),s=cv._s;var x=Math.round(Math.min(cropStart.x,cropEnd.x)/s),y=Math.round(Math.min(cropStart.y,cropEnd.y)/s);var w=Math.round(Math.abs(cropEnd.x-cropStart.x)/s),h=Math.round(Math.abs(cropEnd.y-cropStart.y)/s);if(w<5||h<5)return toast("框选区域太小");var cc=document.createElement("canvas");cc.width=w;cc.height=h;cc.getContext("2d").drawImage(refImg,x,y,w,h,0,0,w,h);rawCrop={canvas:cc,w:w,h:h};document.getElementById("cropArea").classList.add("hidden");document.getElementById("cutoutArea").classList.remove("hidden");upCutPrev()}
+function loadRef(f){if(!f)return;var r=new FileReader();r.onload=function(e){var i=new Image();i.onload=function(){refImg=i;$extractBtn.disabled=false;$cropBtn.disabled=false;toast("参考图已加载")};i.src=e.target.result};r.readAsDataURL(f)}
+
+function extractColors(){
+  if(!refImg)return toast("请先上传参考图");
+  var c=document.createElement("canvas"),sz=50;c.width=sz;c.height=sz;
+  var ctx=c.getContext("2d");ctx.drawImage(refImg,0,0,sz,sz);
+  var d=ctx.getImageData(0,0,sz,sz).data,samples=[];
+  for(var i=0;i<d.length;i+=4)samples.push({r:d[i],g:d[i+1],b:d[i+2]});
+  function km(pts,k,iters){
+    var centroids=pts.slice(0,k).map(function(p){return{r:p.r,g:p.g,b:p.b}});
+    for(var iter=0;iter<iters;iter++){
+      var cl=[];for(var j=0;j<k;j++)cl.push([]);
+      for(var pi=0;pi<pts.length;pi++){var p=pts[pi];var best=0,bestD=Infinity;for(var ci=0;ci<centroids.length;ci++){var cc=centroids[ci];var dr=p.r-cc.r,dg=p.g-cc.g,db=p.b-cc.b,dd=dr*dr+dg*dg+db*db;if(dd<bestD){bestD=dd;best=ci}}cl[best].push(p)}
+      centroids=cl.map(function(cl){if(!cl.length)return{r:0,g:0,b:0};return{r:Math.round(cl.reduce(function(s,p){return s+p.r},0)/cl.length),g:Math.round(cl.reduce(function(s,p){return s+p.g},0)/cl.length),b:Math.round(cl.reduce(function(s,p){return s+p.b},0)/cl.length)}})
+    }
+    return centroids.sort(function(a,b){return(b.r+b.g+b.b)-(a.r+a.g+a.b)})
+  }
+  var cols=km(samples,5,5),tc=cols[2];
+  var hex="#"+[tc.r,tc.g,tc.b].map(function(v){return v.toString(16).padStart(2,"0")}).join("");
+  nText.value=hex;toast("已提取配色（仅文字色）");updateTag();
+}
+
+function startCrop(){
+  if(!refImg)return toast("请先上传参考图");
+  document.getElementById("cutoutArea").classList.add("hidden");
+  var cv=document.getElementById("cropCanvas"),mw=380;
+  cv._s=Math.min(1,mw/refImg.width);
+  cv.width=Math.round(refImg.width*cv._s);cv.height=Math.round(refImg.height*cv._s);
+  var ctx=cv.getContext("2d");ctx.drawImage(refImg,0,0,cv.width,cv.height);
+  cropStart=null;cropEnd=null;
+  cv.onmousedown=function(e){cropStart={x:e.offsetX,y:e.offsetY};cropEnd=null};
+  cv.onmousemove=function(e){if(!cropStart)return;cropEnd={x:e.offsetX,y:e.offsetY};ctx.drawImage(refImg,0,0,cv.width,cv.height);ctx.strokeStyle="#22c55e";ctx.lineWidth=2;ctx.setLineDash([6,3]);var x=Math.min(cropStart.x,cropEnd.x),y=Math.min(cropStart.y,cropEnd.y),w=Math.abs(cropEnd.x-cropStart.x),h=Math.abs(cropEnd.y-cropStart.y);ctx.strokeRect(x,y,w,h)};
+  cv.onmouseup=function(e){cropEnd={x:e.offsetX,y:e.offsetY}};
+  cv.onmouseleave=function(e){if(cropStart&&!cropEnd)cropEnd={x:e.offsetX,y:e.offsetY}};
+  document.getElementById("cropArea").classList.remove("hidden");toast("框选文字区域");
+}
+function confirmCrop(){
+  if(!cropStart||!cropEnd)return toast("请先框选区域");
+  var cv=document.getElementById("cropCanvas"),s=cv._s;
+  var x=Math.round(Math.min(cropStart.x,cropEnd.x)/s),y=Math.round(Math.min(cropStart.y,cropEnd.y)/s);
+  var w=Math.round(Math.abs(cropEnd.x-cropStart.x)/s),h=Math.round(Math.abs(cropEnd.y-cropStart.y)/s);
+  if(w<5||h<5)return toast("框选区域太小");
+  var cc=document.createElement("canvas");cc.width=w;cc.height=h;
+  cc.getContext("2d").drawImage(refImg,x,y,w,h,0,0,w,h);
+  rawCrop={canvas:cc,w:w,h:h};
+  document.getElementById("cropArea").classList.add("hidden");
+  document.getElementById("cutoutArea").classList.remove("hidden");
+  upCutPrev();
+}
 function cancelCrop(){document.getElementById("cropArea").classList.add("hidden");cropStart=null;cropEnd=null}
-function rmBg(id,tol){var d=id.data,w=id.width,h=id.height;var corners=[{r:d[0],g:d[1],b:d[2]},{r:d[(w-1)*4],g:d[(w-1)*4+1],b:d[(w-1)*4+2]},{r:d[(h-1)*w*4],g:d[(h-1)*w*4+1],b:d[(h-1)*w*4+2]},{r:d[((h-1)*w+w-1)*4],g:d[((h-1)*w+w-1)*4+1],b:d[((h-1)*w+w-1)*4+2]}];var ab={r:0,g:0,b:0};for(var ci=0;ci<4;ci++){ab.r+=corners[ci].r;ab.g+=corners[ci].g;ab.b+=corners[ci].b}ab.r=Math.round(ab.r/4);ab.g=Math.round(ab.g/4);ab.b=Math.round(ab.b/4);for(var i=0;i<d.length;i+=4){var dr=d[i]-ab.r,dg=d[i+1]-ab.g,db=d[i+2]-ab.b;if(Math.sqrt(dr*dr+dg*dg+db*db)<tol*4.5)d[i+3]=0}}
-function upCutPrev(){if(!rawCrop)return;var tol=+document.getElementById("tol").value;document.getElementById("tolVal").textContent=tol;var s=+document.getElementById("cutS").value/100;document.getElementById("cutSVal").textContent=s.toFixed(1);var t=document.createElement("canvas");t.width=rawCrop.w;t.height=rawCrop.h;var tctx=t.getContext("2d");tctx.drawImage(rawCrop.canvas,0,0);var id=tctx.getImageData(0,0,t.width,t.height);rmBg(id,tol);tctx.putImageData(id,0,0);var pv=document.getElementById("cutoutPreview");pv.width=t.width*s;pv.height=t.height*s;var pctx=pv.getContext("2d");pctx.clearRect(0,0,pv.width,pv.height);pctx.drawImage(t,0,0,pv.width,pv.height)}
-var cutoutApplied=false;
-function applyCutout(){if(!rawCrop)return;var tol=+document.getElementById("tol").value;var s=+document.getElementById("cutS").value/100;var ox=+document.getElementById("cutX").value,oy=+document.getElementById("cutY").value;document.getElementById("cutXVal").textContent=ox;document.getElementById("cutYVal").textContent=oy;var t=document.createElement("canvas");t.width=rawCrop.w;t.height=rawCrop.h;var tctx=t.getContext("2d");tctx.drawImage(rawCrop.canvas,0,0);var id=tctx.getImageData(0,0,t.width,t.height);rmBg(id,tol);tctx.putImageData(id,0,0);var tags=[$tagN,$tagA];for(var ti=0;ti<tags.length;ti++){var tag=tags[ti];var els=tag.querySelectorAll(".cutout");for(var ei=0;ei<els.length;ei++)els[ei].remove();if($tagTitle.value)tag.querySelector("span").style.display="none";var c=document.createElement("canvas");c.className="cutout";c.width=t.width*s;c.height=t.height*s;c.style.position="absolute";c.style.left=ox+"px";c.style.top=oy+"px";c.style.pointerEvents="none";c.getContext("2d").drawImage(t,0,0,c.width,c.height);tag.appendChild(c)}cutoutApplied=true;toast("📌 已合成到标签")}
-// Download
-function downloadTag(state){var tag=state==="active"?$tagA:$tagN;var cv=document.createElement("canvas");cv.width=360;cv.height=156;var ctx=cv.getContext("2d");ctx.scale(2,2);var cs=getComputedStyle(tag);var br=parseInt(cs.borderRadius)||0,bg=cs.background,color=cs.color;var font=cs.fontFamily,bw=parseInt(cs.borderWidth)||0;var txt=tag.querySelector("span")?tag.querySelector("span").textContent:"";var cutoutEl=tag.querySelector(".cutout");function rr(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath()}
-if(bg&&bg!=="rgba(0, 0, 0, 0)"&&bg!=="transparent"){ctx.fillStyle=bg;if(br)rr(ctx,0,0,180,78,br);else ctx.fillRect(0,0,180,78);ctx.fill()}
-if(bw>0){ctx.strokeStyle=cs.borderColor;ctx.lineWidth=bw;if(br)rr(ctx,0,0,180,78,br);else ctx.strokeRect(0,0,180,78);ctx.stroke()}
-if(cutoutEl){var s2=cutoutEl.width/rawCrop.w||1;ctx.drawImage(rawCrop.canvas,parseInt(cutoutEl.style.left)||0,parseInt(cutoutEl.style.top)||0,cutoutEl.width,cutoutEl.height)}
-if(txt&&!cutoutEl){ctx.fillStyle=color;ctx.font="700 28px "+font;ctx.textBaseline="middle";ctx.fillText(txt,30,39)}
-cv.toBlob(function(blob){var url=URL.createObjectURL(blob);var a=document.createElement("a");a.href=url;a.download="channel-tag-"+state+".png";document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);toast("⬇ 已下载 "+(state==="active"?"选中":"常态")+"标签")})}
-// Font install
-function installFont(f){if(!f)return;var nm=prompt("字体名称：",f.name.replace(/\.(ttf|otf|woff|woff2)$/i,""));if(!nm)return;var r=new FileReader();r.onload=function(e){var ff=new FontFace(nm,"url("+e.target.result+")");ff.load().then(function(loaded){document.fonts.add(loaded);var o=document.createElement("option");o.value="'"+nm+"',sans-serif";o.textContent=nm+" (已安装)";o.style.color="#6366f1";$tagFont.insertBefore(o,$tagFont.firstChild);$tagFont.value=o.value;updateTag();toast("✅ 字体已安装")}).catch(function(err){toast("❌ 失败: "+err.message)})};r.readAsDataURL(f)}
+function rmBg(id,tol){
+  var d=id.data,w=id.width,h=id.height;
+  var corners=[{r:d[0],g:d[1],b:d[2]},{r:d[(w-1)*4],g:d[(w-1)*4+1],b:d[(w-1)*4+2]},{r:d[(h-1)*w*4],g:d[(h-1)*w*4+1],b:d[(h-1)*w*4+2]},{r:d[((h-1)*w+w-1)*4],g:d[((h-1)*w+w-1)*4+1],b:d[((h-1)*w+w-1)*4+2]}];
+  var ab={r:0,g:0,b:0};for(var ci=0;ci<4;ci++){ab.r+=corners[ci].r;ab.g+=corners[ci].g;ab.b+=corners[ci].b}ab.r=Math.round(ab.r/4);ab.g=Math.round(ab.g/4);ab.b=Math.round(ab.b/4);
+  for(var i=0;i<d.length;i+=4){var dr=d[i]-ab.r,dg=d[i+1]-ab.g,db=d[i+2]-ab.b;if(Math.sqrt(dr*dr+dg*dg+db*db)<tol*4.5)d[i+3]=0}
+}
+function upCutPrev(){
+  if(!rawCrop)return;
+  var tol=+document.getElementById("tol").value;document.getElementById("tolVal").textContent=tol;
+  var s=+document.getElementById("cutS").value/100;document.getElementById("cutSVal").textContent=s.toFixed(1);
+  var t=document.createElement("canvas");t.width=rawCrop.w;t.height=rawCrop.h;
+  var tctx=t.getContext("2d");tctx.drawImage(rawCrop.canvas,0,0);
+  var id=tctx.getImageData(0,0,t.width,t.height);rmBg(id,tol);tctx.putImageData(id,0,0);
+  var pv=document.getElementById("cutoutPreview");pv.width=t.width*s;pv.height=t.height*s;
+  var pctx=pv.getContext("2d");pctx.clearRect(0,0,pv.width,pv.height);pctx.drawImage(t,0,0,pv.width,pv.height);
+}
+function applyCutout(){
+  if(!rawCrop)return;
+  var tol=+document.getElementById("tol").value,s=+document.getElementById("cutS").value/100;
+  var ox=+document.getElementById("cutX").value,oy=+document.getElementById("cutY").value;
+  document.getElementById("cutXVal").textContent=ox;document.getElementById("cutYVal").textContent=oy;
+  var t=document.createElement("canvas");t.width=rawCrop.w;t.height=rawCrop.h;
+  var tctx=t.getContext("2d");tctx.drawImage(rawCrop.canvas,0,0);
+  var id=tctx.getImageData(0,0,t.width,t.height);rmBg(id,tol);tctx.putImageData(id,0,0);
+  var tags=[$tagN,$tagA];
+  for(var ti=0;ti<tags.length;ti++){
+    var tag=tags[ti];
+    var els=tag.querySelectorAll(".cutout");for(var ei=0;ei<els.length;ei++)els[ei].remove();
+    if($tagTitle.value)tag.querySelector("span").style.display="none";
+    var c=document.createElement("canvas");c.className="cutout";
+    c.width=t.width*s;c.height=t.height*s;
+    c.style.position="absolute";c.style.left=ox+"px";c.style.top=oy+"px";c.style.pointerEvents="none";
+    c.getContext("2d").drawImage(t,0,0,c.width,c.height);
+    tag.appendChild(c);
+  }
+  toast("已合成到标签");
+}
+
+function downloadTag(state){
+  var tag=state==="active"?$tagA:$tagN;
+  var cv=document.createElement("canvas");cv.width=360;cv.height=156;
+  var ctx=cv.getContext("2d");ctx.scale(2,2);
+  var cs=getComputedStyle(tag);
+  var bg=cs.background,color=cs.color,font=cs.fontFamily;
+  var txt=tag.querySelector("span")?tag.querySelector("span").textContent:"";
+  var cutoutEl=tag.querySelector(".cutout");
+  function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath()}
+  if(bg!=="rgba(0, 0, 0, 0)"&&bg!=="transparent"){ctx.fillStyle=bg;rr(0,0,180,78,12);ctx.fill()}
+  if(cutoutEl){ctx.drawImage(rawCrop.canvas,parseInt(cutoutEl.style.left)||0,parseInt(cutoutEl.style.top)||0,cutoutEl.width,cutoutEl.height)}
+  if(txt&&!cutoutEl){ctx.fillStyle=color;ctx.font="700 28px "+font;ctx.textBaseline="middle";ctx.fillText(txt,30,39)}
+  cv.toBlob(function(blob){var url=URL.createObjectURL(blob);var a=document.createElement("a");a.href=url;a.download="channel-tag-"+state+".png";document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);toast("已下载"+(state==="active"?"选中":"常态")+"标签")})
+}
+
+function installFont(f){if(!f)return;var nm=prompt("字体名称：",f.name.replace(/\.(ttf|otf|woff|woff2)$/i,""));if(!nm)return;var r=new FileReader();r.onload=function(e){var ff=new FontFace(nm,"url("+e.target.result+")");ff.load().then(function(loaded){document.fonts.add(loaded);var o=document.createElement("option");o.value="'"+nm+"',sans-serif";o.textContent=nm+" (已安装)";o.style.color="#6366f1";$tagFont.insertBefore(o,$tagFont.firstChild);$tagFont.value=o.value;updateTag();toast("字体已安装")}).catch(function(err){toast("失败: "+err.message)})};r.readAsDataURL(f)}
 updateTag();
 </script>
 </body>
