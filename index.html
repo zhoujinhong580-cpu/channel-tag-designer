@@ -1,0 +1,3700 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Channel Tag Designer</title>
+<style>
+:root {
+    --bg: #0d0d15;
+    --panel-bg: #12121a;
+    --text: #e0e0e0;
+    --text-secondary: #8888a0;
+    --border: #2a2a3a;
+    --accent: #6366f1;
+    --radius: 12px;
+    --radius-sm: 8px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.header { text-align: center; margin-bottom: 40px; }
+.header h1 { font-size: 32px; font-weight: 800; background: linear-gradient(135deg, #6366f1, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.header p { color: var(--text-secondary); font-size: 14px; margin-top: 8px; }
+.container { display: flex; gap: 40px; max-width: 1200px; width: 100%; flex-wrap: wrap; justify-content: center; }
+.panel { background: var(--panel-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; width: 380px; }
+.panel-title { font-size: 16px; font-weight: 700; margin-bottom: 20px; color: var(--accent); }
+.form-group { margin-bottom: 16px; }
+.form-group label { display: block; font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+.form-group input[type="text"], .form-group select {
+    width: 100%; padding: 10px 14px; background: #0a0a10; border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: 14px; outline: none;
+}
+.form-group input[type="color"] {
+    width: 40px; height: 30px; border: none; border-radius: 4px; cursor: pointer; background: none; padding: 0;
+}
+.color-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.color-row .hex { font-size: 11px; color: var(--text-secondary); font-family: monospace; min-width: 60px; }
+.presets { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+.preset-dot { width: 28px; height: 28px; border-radius: 6px; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; }
+.preset-dot:hover { border-color: #fff; transform: scale(1.1); }
+.style-options { display: flex; gap: 8px; flex-wrap: wrap; }
+.style-option { padding: 8px 16px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--text-secondary); cursor: pointer; font-size: 13px; transition: all 0.2s; }
+.style-option.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.preview-panel { width: 500px; }
+.tag-wrapper { display: inline-block; position: relative; margin-bottom: 12px; }
+.tag {
+    width: 180px; height: 78px; border-radius: 12px; display: flex; align-items: center; justify-content: flex-start;
+    padding: 24px 30px; font-size: 28px; line-height: 28px; font-weight: 700; letter-spacing: 0;
+    transition: all 0.3s ease; cursor: pointer; position: relative; overflow: hidden; user-select: none;
+    font-family: var(--tag-font); box-sizing: border-box;
+}
+.tag-guide {
+    position: absolute; top: 24px; left: 30px; right: 30px; bottom: 24px;
+    border: 1px dashed rgba(99,102,241,0.3); border-radius: 2px; pointer-events: none; z-index: 10;
+}
+.tag-guide::before {
+    content: '规范区 120×30'; position: absolute; top: -16px; left: 50%; transform: translateX(-50%);
+    font-size: 8px; color: rgba(99,102,241,0.5); white-space: nowrap; font-family: monospace;
+    background: #12121a; padding: 1px 4px; border-radius: 2px;
+}
+.tag.style-solid, .tag.style-outline, .tag.style-soft, .tag.style-pill, .tag.style-gradient {
+    background: transparent; border: none; color: var(--tag-text);
+}
+.tag.style-solid.active-state { background: var(--tag-active-bg); color: var(--tag-active-text); box-shadow: 0 0 0 3px var(--tag-active-bg), 0 8px 24px rgba(0,0,0,0.3); }
+.tag.style-outline.active-state { background: var(--tag-active-bg); border: 2px solid var(--tag-active-bg); color: var(--tag-active-text); }
+.tag.style-soft.active-state { background: var(--tag-active-bg); color: var(--tag-active-text); box-shadow: 0 4px 16px color-mix(in srgb, var(--tag-active-bg) 40%, transparent); }
+.tag.style-pill.active-state { border-radius: 39px; background: var(--tag-active-bg); color: var(--tag-active-text); box-shadow: 0 0 0 3px var(--tag-active-bg), 0 8px 24px rgba(0,0,0,0.3); }
+.tag.style-gradient.active-state { background: linear-gradient(135deg, var(--tag-active-bg), var(--tag-bg)); color: var(--tag-active-text); box-shadow: 0 8px 28px rgba(0,0,0,0.4); }
+.num-compact { font-size: 28px; display: inline; }
+.cropped-text-img { pointer-events: none; }
+.preview-grid { display: flex; flex-direction: column; gap: 20px; }
+.preview-item { }
+.preview-item .label { font-size: 12px; color: var(--text-secondary); margin-bottom: 8px; }
+.download-btn {
+    padding: 8px 16px; background: #6366f1; border: 1px solid #6366f1; border-radius: 6px; color: #fff; font-size: 13px; cursor: pointer; transition: all 0.2s;
+}
+.download-btn:hover { background: #5558e6; }
+.ref-section { background: #0a0a10; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px; margin-bottom: 20px; }
+.ref-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+.ref-header span { font-size: 14px; font-weight: 600; }
+.ref-upload-btn { padding: 6px 14px; background: #1a1a2a; border: 1px solid var(--border); border-radius: 6px; color: var(--text); cursor: pointer; font-size: 13px; }
+.ref-match-btn { padding: 6px 14px; background: #6366f1; border: none; border-radius: 6px; color: #fff; cursor: pointer; font-size: 13px; }
+.ref-match-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.ref-preview-row { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
+.ref-preview-img { max-width: 120px; max-height: 60px; border-radius: 4px; border: 1px solid var(--border); }
+.ref-arrow { font-size: 18px; }
+.css-output { margin-top: 32px; background: #0a0a10; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 20px; max-width: 1100px; width: 100%; }
+.css-title { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; font-size: 14px; font-weight: 600; }
+.css-title button { padding: 4px 12px; background: #1a1a2a; border: 1px solid var(--border); border-radius: 4px; color: var(--text); cursor: pointer; font-size: 12px; }
+.css-output pre { background: #060610; padding: 16px; border-radius: 6px; overflow-x: auto; font-size: 12px; line-height: 1.5; color: #a0a0c0; white-space: pre-wrap; }
+.toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #22c55e; color: #000; padding: 10px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; opacity: 0; transition: opacity 0.3s; z-index: 999; }
+.toast.visible { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div class="header">
+    <h1>Channel Tag Designer</h1>
+    <p>频道标签设计工具 · 180×78px 实时预览</p>
+</div>
+
+<div class="container">
+    <div class="panel">
+        <div class="panel-title">🎨 设计参数</div>
+        <div class="form-group">
+            <label>标签标题</label>
+            <input type="text" id="tagTitle" value="设计频道" placeholder="输入标签标题..." maxlength="8">
+        </div>
+        <div class="form-group">
+            <label>文案字体</label>
+            <div style="display:flex;gap:8px;">
+                <select id="tagFont" style="flex:1;padding:10px 14px;background:#12121a;border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;outline:none;cursor:pointer;">
+                    <optgroup label="── 已安装字体 ──" id="installedFontsGroup"></optgroup>
+                    <optgroup label="── 黑体/无衬线 ──">
+                        <option value="'PingFang SC', 'Microsoft YaHei', sans-serif">苹方-简</option>
+                        <option value="'PingFang TC', sans-serif">苹方-繁</option>
+                        <option value="'Heiti SC', 'SimHei', sans-serif">黑体-简</option>
+                        <option value="'Microsoft YaHei', sans-serif">微软雅黑</option>
+                        <option value="'HarmonyOS Sans SC', sans-serif">HarmonyOS Sans</option>
+                        <option value="'Alibaba PuHuiTi 3.0', sans-serif">阿里巴巴普惠体</option>
+                    </optgroup>
+                    <optgroup label="── 宋体/衬线 ──">
+                        <option value="'Songti SC', 'SimSun', serif">宋体-简</option>
+                        <option value="'STSong', serif">华文宋体</option>
+                    </optgroup>
+                    <optgroup label="── 楷体/手写 ──">
+                        <option value="'Kaiti SC', 'STKaiti', serif">楷体-简</option>
+                        <option value="'KaiTi', serif">楷体</option>
+                    </optgroup>
+                    <optgroup label="── 圆体 ──">
+                        <option value="'Yuanti SC', 'PingFang SC', sans-serif">圆体-简</option>
+                    </optgroup>
+                </select>
+                <button onclick="document.getElementById('fontFileInput').click()" style="padding:10px 14px;background:#12121a;border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;cursor:pointer;white-space:nowrap;" title="安装自定义字体 (.ttf/.otf/.woff)">📁 安装字体</button>
+                <input type="file" id="fontFileInput" accept=".ttf,.otf,.woff,.woff2" style="display:none" onchange="installFont(event)">
+            </div>
+        </div>
+        <div class="form-group">
+            <label>常态背景色</label>
+            <div class="color-row"><input type="color" id="normalBg" value="#2a2a4a"><span class="hex" id="normalBgHex">#2a2a4a</span></div>
+        </div>
+        <div class="form-group">
+            <label>常态文字色</label>
+            <div class="color-row"><input type="color" id="normalText" value="#a0a0c0"><span class="hex" id="normalTextHex">#a0a0c0</span></div>
+        </div>
+        <div class="form-group">
+            <label>选中背景色</label>
+            <div class="color-row"><input type="color" id="activeBg" value="#6366f1"><span class="hex" id="activeBgHex">#6366f1</span></div>
+        </div>
+        <div class="form-group">
+            <label>选中文字色</label>
+            <div class="color-row"><input type="color" id="activeText" value="#ffffff"><span class="hex" id="activeTextHex">#ffffff</span></div>
+        </div>
+        <div class="form-group">
+            <label>预设配色</label>
+            <div class="presets" id="presets"></div>
+        </div>
+        <div class="form-group">
+            <label>标签样式</label>
+            <div class="style-options" id="styleOptions">
+                <button class="style-option active" data-style="solid">Solid</button>
+                <button class="style-option" data-style="outline">Outline</button>
+                <button class="style-option" data-style="soft">Soft</button>
+                <button class="style-option" data-style="pill">Pill</button>
+                <button class="style-option" data-style="gradient">Gradient</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="preview-panel">
+        <div class="panel-title">👁 实时预览</div>
+        <div class="ref-section" id="refSection">
+            <div class="ref-header">
+                <span>🖼 参考图提取配色 & 文字</span>
+                <div style="display:flex;gap:8px;">
+                    <button class="ref-upload-btn" onclick="document.getElementById('refImageInput').click()">📤 上传参考图</button>
+                    <button class="ref-match-btn" id="matchBtn" onclick="extractColors()" disabled>🎨 提取配色</button>
+                    <button class="ref-match-btn" id="cropBtn" onclick="startCrop()" disabled style="background:#8b5cf6;">🔪 切图合成</button>
+                </div>
+            </div>
+            <input type="file" id="refImageInput" accept="image/*" style="display:none" onchange="handleRefUpload(event)">
+            <div class="ref-preview-row" id="refPreviewRow" style="display:none">
+                <img id="refPreviewImg" class="ref-preview-img" alt="参考图">
+                <span class="ref-arrow">→</span>
+                <div id="extractedPalette" style="display:flex;gap:6px;align-items:center;"></div>
+            </div>
+            <div id="cropArea" style="display:none;margin-top:12px;position:relative;">
+                <div style="font-size:12px;color:#8888a0;margin-bottom:6px;">🖱 拖拽框选文字区域 → 点击确认</div>
+                <canvas.onmousedown = (e) => { cropStart = {x: e.offsetX, y: e.offsetY}; cropEnd = null; };
+        canvas.onmousemove = (e) => {
+            if (!cropStart) return;
+            cropEnd = {x: e.offsetX, y: e.offsetY};
+            const ctx2 = canvas.getContext('2d');
+            ctx2.drawImage(refImageData, 0, 0, canvas.width, canvas.height);
+            ctx2.strokeStyle = '#22c55e';
+            ctx2.lineWidth = 2;
+            ctx2.setLineDash([6,3]);
+            const x = Math.min(cropStart.x, cropEnd.x);
+            const y = Math.min(cropStart.y, cropEnd.y);
+            const w = Math.abs(cropEnd.x - cropStart.x);
+            const h = Math.abs(cropEnd.y - cropStart.y);
+            ctx2.strokeRect(x, y, w, h);
+        };
+        canvas.onmouseup = (e) => { cropEnd = {x: e.offsetX, y: e.offsetY}; };
+    }
+
+    function confirmCrop() {
+        if (!cropStart || !cropEnd) { showToast('请先框选区域'); return; }
+        const canvas = document.getElementById('cropCanvas');
+        const x = Math.min(cropStart.x, cropEnd.x);
+        const y = Math.min(cropStart.y, cropEnd.y);
+        const w = Math.abs(cropEnd.x - cropStart.x);
+        const h = Math.abs(cropEnd.y - cropStart.y);
+        if (w < 5 || h < 5) { showToast('框选区域太小'); return; }
+        const croppedCanvas = document.createElement('canvas');
+        croppedCanvas.width = w; croppedCanvas.height = h;
+        croppedCanvas.getContext('2d').drawImage(canvas, x, y, w, h, 0, 0, w, h);
+        rawCropData = { canvas: croppedCanvas, width: w, height: h, scale: canvas._scale };
+        document.getElementById('cropArea').style.display = 'none';
+        document.getElementById('cutoutPreview').style.display = 'block';
+        updateCutoutPreview();
+    }
+
+    function cancelCrop() {
+        document.getElementById('cropArea').style.display = 'none';
+        cropStart = null; cropEnd = null;
+    }
+
+    function removeImageBackground(imageData, tolerance) {
+        const data = imageData.data;
+        const bgColor = {r: data[0], g: data[1], b: data[2]};
+        const corners = [
+            {r: data[0], g: data[1], b: data[2]},
+            {r: data[(imageData.width-1)*4], g: data[(imageData.width-1)*4+1], b: data[(imageData.width-1)*4+2]},
+            {r: data[(imageData.height-1)*imageData.width*4], g: data[(imageData.height-1)*imageData.width*4+1], b: data[(imageData.height-1)*imageData.width*4+2]},
+            {r: data[((imageData.height-1)*imageData.width+imageData.width-1)*4], g: data[((imageData.height-1)*imageData.width+imageData.width-1)*4+1], b: data[((imageData.height-1)*imageData.width+imageData.width-1)*4+2]}
+        ];
+        const avgBg = {r:0,g:0,b:0};
+        corners.forEach(c => { avgBg.r+=c.r; avgBg.g+=c.g; avgBg.b+=c.b; });
+        avgBg.r = Math.round(avgBg.r/4); avgBg.g = Math.round(avgBg.g/4); avgBg.b = Math.round(avgBg.b/4);
+        for (let i = 0; i < data.length; i += 4) {
+            const dr = data[i]-avgBg.r, dg = data[i+1]-avgBg.g, db = data[i+2]-avgBg.b;
+            const dist = Math.sqrt(dr*dr+dg*dg+db*db);
+            if (dist < tolerance * 4.5) data[i+3] = 0;
+        }
+    }
+
+    function updateCutoutPreview() {
+        if (!rawCropData) return;
+        const tolerance = parseInt(document.getElementById('cutoutTolerance').value);
+        document.getElementById('cutoutToleranceVal').textContent = tolerance;
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = rawCropData.width; tempCanvas.height = rawCropData.height;
+        const ctx = tempCanvas.getContext('2d');
+        ctx.drawImage(rawCropData.canvas, 0, 0);
+        const imageData = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+        removeImageBackground(imageData, tolerance);
+        ctx.putImageData(imageData, 0, 0);
+        const previewCanvas = document.getElementById('cutoutPreviewCanvas');
+        const scale = parseFloat(document.getElementById('cutoutScale').value) / 100;
+        previewCanvas.width = rawCropData.width * scale;
+        previewCanvas.height = rawCropData.height * scale;
+        const pctx = previewCanvas.getContext('2d');
+        pctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+        pctx.drawImage(tempCanvas, 0, 0, previewCanvas.width, previewCanvas.height);
+    }
+
+    function updateCutoutScale() {
+        const v = parseInt(document.getElementById('cutoutScale').value);
+        document.getElementById('cutoutScaleVal').textContent = (v/100).toFixed(1);
+        updateCutoutPreview();
+    }
+
+    function updateCutoutPosition() {
+        document.getElementById('cutoutXVal').textContent = document.getElementById('cutoutOffsetX').value;
+        document.getElementById('cutoutYVal').textContent = document.getElementById('cutoutOffsetY').value;
+        if (croppedTextImage) applyCutoutToTag();
+    }
+
+    function applyCutoutToTag() {
+        if (!rawCropData) return;
+        const tolerance = parseInt(document.getElementById('cutoutTolerance').value);
+        const scale = parseInt(document.getElementById('cutoutScale').value) / 100;
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = rawCropData.width; tempCanvas.height = rawCropData.height;
+        const ctx = tempCanvas.getContext('2d');
+        ctx.drawImage(rawCropData.canvas, 0, 0);
+        const imageData = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+        removeImageBackground(imageData, tolerance);
+        ctx.putImageData(imageData, 0, 0);
+        const offsetX = parseInt(document.getElementById('cutoutOffsetX').value);
+        const offsetY = parseInt(document.getElementById('cutoutOffsetY').value);
+        croppedTextImage = { canvas: tempCanvas, scale, offsetX, offsetY };
+        const rawTitle = tagTitle.value || '';
+        [tagNormal, tagActive].forEach(tag => {
+            tag.querySelectorAll('.cropped-text-img').forEach(el => el.remove());
+            tag.innerHTML = '';
+            if (rawTitle) { const span = document.createElement('span'); span.innerHTML = formatTitle(rawTitle); span.style.display = 'none'; tag.appendChild(span); }
+            const img = document.createElement('canvas');
+            img.className = 'cropped-text-img';
+            img.width = tempCanvas.width * scale;
+            img.height = tempCanvas.height * scale;
+            img.style.position = 'absolute';
+            img.style.left = offsetX + 'px';
+            img.style.top = offsetY + 'px';
+            img.getContext('2d').drawImage(tempCanvas, 0, 0, img.width, img.height);
+            tag.appendChild(img);
+        });
+        showToast('📌 已合成到标签');
+    }
+
+    // === 下载 ===
+    function downloadTag(state) {
+        const tag = state === 'active' ? tagActive : tagNormal;
+        const tagRect = tag.getBoundingClientRect();
+        const wrapper = tag.parentElement;
+        const wrapperRect = wrapper.getBoundingClientRect();
+        const canvas = document.createElement('canvas');
+        canvas.width = 180 * 2;
+        canvas.height = 78 * 2;
+        const ctx = canvas.getContext('2d');
+        ctx.scale(2, 2);
+        const html = tag.outerHTML;
+        const svgData = `<svg xmlns="http://www.w3.org/2000/svg" width="180" height="78"><foreignObject width="180" height="78">${html.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}</foreignObject></svg>`;
+        const img = new Image();
+        img.onload = () => {
+            ctx.drawImage(img, 0, 0, 180, 78);
+            const link = document.createElement('a');
+            link.download = `channel-tag-${state}-${Date.now()}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            showToast('✅ 已下载 ' + (state==='active'?'选中':'常态') + ' 标签');
+        };
+        img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+    }
+
+    // === 初始化 ===
+    updatePreview();
+})();
+</script>
+</body>
+</html> id="cropCanvas" style="max-width:100%;border-radius:8px;cursor:crosshair;background:#fff;"></canvas.onmousedown = (e) => { cropStart = {x: e.offsetX, y: e.offsetY}; cropEnd = null; };
+        canvas.onmousemove = (e) => {
+            if (!cropStart) return;
+            cropEnd = {x: e.offsetX, y: e.offsetY};
+            const ctx2 = canvas.getContext('2d');
+            ctx2.drawImage(refImageData, 0, 0, canvas.width, canvas.height);
+            ctx2.strokeStyle = '#22c55e';
+            ctx2.lineWidth = 2;
+            ctx2.setLineDash([6,3]);
+            const x = Math.min(cropStart.x, cropEnd.x);
+            const y = Math.min(cropStart.y, cropEnd.y);
+            const w = Math.abs(cropEnd.x - cropStart.x);
+            const h = Math.abs(cropEnd.y - cropStart.y);
+            ctx2.strokeRect(x, y, w, h);
+        };
+        canvas.onmouseup = (e) => { cropEnd = {x: e.offsetX, y: e.offsetY}; };
+    }
+
+    function confirmCrop() {
+        if (!cropStart || !cropEnd) { showToast('请先框选区域'); return; }
+        const canvas = document.getElementById('cropCanvas');
+        const x = Math.min(cropStart.x, cropEnd.x);
+        const y = Math.min(cropStart.y, cropEnd.y);
+        const w = Math.abs(cropEnd.x - cropStart.x);
+        const h = Math.abs(cropEnd.y - cropStart.y);
+        if (w < 5 || h < 5) { showToast('框选区域太小'); return; }
+        const croppedCanvas = document.createElement('canvas');
+        croppedCanvas.width = w; croppedCanvas.height = h;
+        croppedCanvas.getContext('2d').drawImage(canvas, x, y, w, h, 0, 0, w, h);
+        rawCropData = { canvas: croppedCanvas, width: w, height: h, scale: canvas._scale };
+        document.getElementById('cropArea').style.display = 'none';
+        document.getElementById('cutoutPreview').style.display = 'block';
+        updateCutoutPreview();
+    }
+
+    function cancelCrop() {
+        document.getElementById('cropArea').style.display = 'none';
+        cropStart = null; cropEnd = null;
+    }
+
+    function removeImageBackground(imageData, tolerance) {
+        const data = imageData.data;
+        const bgColor = {r: data[0], g: data[1], b: data[2]};
+        const corners = [
+            {r: data[0], g: data[1], b: data[2]},
+            {r: data[(imageData.width-1)*4], g: data[(imageData.width-1)*4+1], b: data[(imageData.width-1)*4+2]},
+            {r: data[(imageData.height-1)*imageData.width*4], g: data[(imageData.height-1)*imageData.width*4+1], b: data[(imageData.height-1)*imageData.width*4+2]},
+            {r: data[((imageData.height-1)*imageData.width+imageData.width-1)*4], g: data[((imageData.height-1)*imageData.width+imageData.width-1)*4+1], b: data[((imageData.height-1)*imageData.width+imageData.width-1)*4+2]}
+        ];
+        const avgBg = {r:0,g:0,b:0};
+        corners.forEach(c => { avgBg.r+=c.r; avgBg.g+=c.g; avgBg.b+=c.b; });
+        avgBg.r = Math.round(avgBg.r/4); avgBg.g = Math.round(avgBg.g/4); avgBg.b = Math.round(avgBg.b/4);
+        for (let i = 0; i < data.length; i += 4) {
+            const dr = data[i]-avgBg.r, dg = data[i+1]-avgBg.g, db = data[i+2]-avgBg.b;
+            const dist = Math.sqrt(dr*dr+dg*dg+db*db);
+            if (dist < tolerance * 4.5) data[i+3] = 0;
+        }
+    }
+
+    function updateCutoutPreview() {
+        if (!rawCropData) return;
+        const tolerance = parseInt(document.getElementById('cutoutTolerance').value);
+        document.getElementById('cutoutToleranceVal').textContent = tolerance;
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = rawCropData.width; tempCanvas.height = rawCropData.height;
+        const ctx = tempCanvas.getContext('2d');
+        ctx.drawImage(rawCropData.canvas, 0, 0);
+        const imageData = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+        removeImageBackground(imageData, tolerance);
+        ctx.putImageData(imageData, 0, 0);
+        const previewCanvas = document.getElementById('cutoutPreviewCanvas');
+        const scale = parseFloat(document.getElementById('cutoutScale').value) / 100;
+        previewCanvas.width = rawCropData.width * scale;
+        previewCanvas.height = rawCropData.height * scale;
+        const pctx = previewCanvas.getContext('2d');
+        pctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+        pctx.drawImage(tempCanvas, 0, 0, previewCanvas.width, previewCanvas.height);
+    }
+
+    function updateCutoutScale() {
+        const v = parseInt(document.getElementById('cutoutScale').value);
+        document.getElementById('cutoutScaleVal').textContent = (v/100).toFixed(1);
+        updateCutoutPreview();
+    }
+
+    function updateCutoutPosition() {
+        document.getElementById('cutoutXVal').textContent = document.getElementById('cutoutOffsetX').value;
+        document.getElementById('cutoutYVal').textContent = document.getElementById('cutoutOffsetY').value;
+        if (croppedTextImage) applyCutoutToTag();
+    }
+
+    function applyCutoutToTag() {
+        if (!rawCropData) return;
+        const tolerance = parseInt(document.getElementById('cutoutTolerance').value);
+        const scale = parseInt(document.getElementById('cutoutScale').value) / 100;
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = rawCropData.width; tempCanvas.height = rawCropData.height;
+        const ctx = tempCanvas.getContext('2d');
+        ctx.drawImage(rawCropData.canvas, 0, 0);
+        const imageData = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+        removeImageBackground(imageData, tolerance);
+        ctx.putImageData(imageData, 0, 0);
+        const offsetX = parseInt(document.getElementById('cutoutOffsetX').value);
+        const offsetY = parseInt(document.getElementById('cutoutOffsetY').value);
+        croppedTextImage = { canvas: tempCanvas, scale, offsetX, offsetY };
+        const rawTitle = tagTitle.value || '';
+        [tagNormal, tagActive].forEach(tag => {
+            tag.querySelectorAll('.cropped-text-img').forEach(el => el.remove());
+            tag.innerHTML = '';
+            if (rawTitle) { const span = document.createElement('span'); span.innerHTML = formatTitle(rawTitle); span.style.display = 'none'; tag.appendChild(span); }
+            const img = document.createElement('canvas');
+            img.className = 'cropped-text-img';
+            img.width = tempCanvas.width * scale;
+            img.height = tempCanvas.height * scale;
+            img.style.position = 'absolute';
+            img.style.left = offsetX + 'px';
+            img.style.top = offsetY + 'px';
+            img.getContext('2d').drawImage(tempCanvas, 0, 0, img.width, img.height);
+            tag.appendChild(img);
+        });
+        showToast('📌 已合成到标签');
+    }
+
+    // === 下载 ===
+    function downloadTag(state) {
+        const tag = state === 'active' ? tagActive : tagNormal;
+        const tagRect = tag.getBoundingClientRect();
+        const wrapper = tag.parentElement;
+        const wrapperRect = wrapper.getBoundingClientRect();
+        const canvas = document.createElement('canvas');
+        canvas.width = 180 * 2;
+        canvas.height = 78 * 2;
+        const ctx = canvas.getContext('2d');
+        ctx.scale(2, 2);
+        const html = tag.outerHTML;
+        const svgData = `<svg xmlns="http://www.w3.org/2000/svg" width="180" height="78"><foreignObject width="180" height="78">${html.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}</foreignObject></svg>`;
+        const img = new Image();
+        img.onload = () => {
+            ctx.drawImage(img, 0, 0, 180, 78);
+            const link = document.createElement('a');
+            link.download = `channel-tag-${state}-${Date.now()}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            showToast('✅ 已下载 ' + (state==='active'?'选中':'常态') + ' 标签');
+        };
+        img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+    }
+
+    // === 初始化 ===
+    updatePreview();
+})();
+</script>
+</body>
+</html>>
+                <div style="display:flex;gap:8px;margin-top:8px;">
+                    <button class="download-btn" onclick="confirmCrop()" style="background:#22c55e;border-color:#22c55e;color:#000;">✓ 确认裁剪</button>
+                    <button class="download-btn" onclick="cancelCrop()">取消</button>
+                </div>
+            </div>
+            <div id="cutoutPreview" style="display:none;margin-top:12px;padding:12px;background:#0a0a10;border-radius:8px;border:1px solid var(--border);">
+                <div style="font-size:12px;color:#8888a0;margin-bottom:8px;">🔍 切图预览（已去背景）</div>
+                <div style="display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap;">
+                    <canvas.onmousedown = (e) => { cropStart = {x: e.offsetX, y: e.offsetY}; cropEnd = null; };
+        canvas.onmousemove = (e) => {
+            if (!cropStart) return;
+            cropEnd = {x: e.offsetX, y: e.offsetY};
+            const ctx2 = canvas.getContext('2d');
+            ctx2.drawImage(refImageData, 0, 0, canvas.width, canvas.height);
+            ctx2.strokeStyle = '#22c55e';
+            ctx2.lineWidth = 2;
+            ctx2.setLineDash([6,3]);
+            const x = Math.min(cropStart.x, cropEnd.x);
+            const y = Math.min(cropStart.y, cropEnd.y);
+            const w = Math.abs(cropEnd.x - cropStart.x);
+            const h = Math.abs(cropEnd.y - cropStart.y);
+            ctx2.strokeRect(x, y, w, h);
+        };
+        canvas.onmouseup = (e) => { cropEnd = {x: e.offsetX, y: e.offsetY}; };
+    }
+
+    function confirmCrop() {
+        if (!cropStart || !cropEnd) { showToast('请先框选区域'); return; }
+        const canvas = document.getElementById('cropCanvas');
+        const x = Math.min(cropStart.x, cropEnd.x);
+        const y = Math.min(cropStart.y, cropEnd.y);
+        const w = Math.abs(cropEnd.x - cropStart.x);
+        const h = Math.abs(cropEnd.y - cropStart.y);
+        if (w < 5 || h < 5) { showToast('框选区域太小'); return; }
+        const croppedCanvas = document.createElement('canvas');
+        croppedCanvas.width = w; croppedCanvas.height = h;
+        croppedCanvas.getContext('2d').drawImage(canvas, x, y, w, h, 0, 0, w, h);
+        rawCropData = { canvas: croppedCanvas, width: w, height: h, scale: canvas._scale };
+        document.getElementById('cropArea').style.display = 'none';
+        document.getElementById('cutoutPreview').style.display = 'block';
+        updateCutoutPreview();
+    }
+
+    function cancelCrop() {
+        document.getElementById('cropArea').style.display = 'none';
+        cropStart = null; cropEnd = null;
+    }
+
+    function removeImageBackground(imageData, tolerance) {
+        const data = imageData.data;
+        const bgColor = {r: data[0], g: data[1], b: data[2]};
+        const corners = [
+            {r: data[0], g: data[1], b: data[2]},
+            {r: data[(imageData.width-1)*4], g: data[(imageData.width-1)*4+1], b: data[(imageData.width-1)*4+2]},
+            {r: data[(imageData.height-1)*imageData.width*4], g: data[(imageData.height-1)*imageData.width*4+1], b: data[(imageData.height-1)*imageData.width*4+2]},
+            {r: data[((imageData.height-1)*imageData.width+imageData.width-1)*4], g: data[((imageData.height-1)*imageData.width+imageData.width-1)*4+1], b: data[((imageData.height-1)*imageData.width+imageData.width-1)*4+2]}
+        ];
+        const avgBg = {r:0,g:0,b:0};
+        corners.forEach(c => { avgBg.r+=c.r; avgBg.g+=c.g; avgBg.b+=c.b; });
+        avgBg.r = Math.round(avgBg.r/4); avgBg.g = Math.round(avgBg.g/4); avgBg.b = Math.round(avgBg.b/4);
+        for (let i = 0; i < data.length; i += 4) {
+            const dr = data[i]-avgBg.r, dg = data[i+1]-avgBg.g, db = data[i+2]-avgBg.b;
+            const dist = Math.sqrt(dr*dr+dg*dg+db*db);
+            if (dist < tolerance * 4.5) data[i+3] = 0;
+        }
+    }
+
+    function updateCutoutPreview() {
+        if (!rawCropData) return;
+        const tolerance = parseInt(document.getElementById('cutoutTolerance').value);
+        document.getElementById('cutoutToleranceVal').textContent = tolerance;
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = rawCropData.width; tempCanvas.height = rawCropData.height;
+        const ctx = tempCanvas.getContext('2d');
+        ctx.drawImage(rawCropData.canvas, 0, 0);
+        const imageData = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+        removeImageBackground(imageData, tolerance);
+        ctx.putImageData(imageData, 0, 0);
+        const previewCanvas = document.getElementById('cutoutPreviewCanvas');
+        const scale = parseFloat(document.getElementById('cutoutScale').value) / 100;
+        previewCanvas.width = rawCropData.width * scale;
+        previewCanvas.height = rawCropData.height * scale;
+        const pctx = previewCanvas.getContext('2d');
+        pctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+        pctx.drawImage(tempCanvas, 0, 0, previewCanvas.width, previewCanvas.height);
+    }
+
+    function updateCutoutScale() {
+        const v = parseInt(document.getElementById('cutoutScale').value);
+        document.getElementById('cutoutScaleVal').textContent = (v/100).toFixed(1);
+        updateCutoutPreview();
+    }
+
+    function updateCutoutPosition() {
+        document.getElementById('cutoutXVal').textContent = document.getElementById('cutoutOffsetX').value;
+        document.getElementById('cutoutYVal').textContent = document.getElementById('cutoutOffsetY').value;
+        if (croppedTextImage) applyCutoutToTag();
+    }
+
+    function applyCutoutToTag() {
+        if (!rawCropData) return;
+        const tolerance = parseInt(document.getElementById('cutoutTolerance').value);
+        const scale = parseInt(document.getElementById('cutoutScale').value) / 100;
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = rawCropData.width; tempCanvas.height = rawCropData.height;
+        const ctx = tempCanvas.getContext('2d');
+        ctx.drawImage(rawCropData.canvas, 0, 0);
+        const imageData = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+        removeImageBackground(imageData, tolerance);
+        ctx.putImageData(imageData, 0, 0);
+        const offsetX = parseInt(document.getElementById('cutoutOffsetX').value);
+        const offsetY = parseInt(document.getElementById('cutoutOffsetY').value);
+        croppedTextImage = { canvas: tempCanvas, scale, offsetX, offsetY };
+        const rawTitle = tagTitle.value || '';
+        [tagNormal, tagActive].forEach(tag => {
+            tag.querySelectorAll('.cropped-text-img').forEach(el => el.remove());
+            tag.innerHTML = '';
+            if (rawTitle) { const span = document.createElement('span'); span.innerHTML = formatTitle(rawTitle); span.style.display = 'none'; tag.appendChild(span); }
+            const img = document.createElement('canvas');
+            img.className = 'cropped-text-img';
+            img.width = tempCanvas.width * scale;
+            img.height = tempCanvas.height * scale;
+            img.style.position = 'absolute';
+            img.style.left = offsetX + 'px';
+            img.style.top = offsetY + 'px';
+            img.getContext('2d').drawImage(tempCanvas, 0, 0, img.width, img.height);
+            tag.appendChild(img);
+        });
+        showToast('📌 已合成到标签');
+    }
+
+    // === 下载 ===
+    function downloadTag(state) {
+        const tag = state === 'active' ? tagActive : tagNormal;
+        const tagRect = tag.getBoundingClientRect();
+        const wrapper = tag.parentElement;
+        const wrapperRect = wrapper.getBoundingClientRect();
+        const canvas = document.createElement('canvas');
+        canvas.width = 180 * 2;
+        canvas.height = 78 * 2;
+        const ctx = canvas.getContext('2d');
+        ctx.scale(2, 2);
+        const html = tag.outerHTML;
+        const svgData = `<svg xmlns="http://www.w3.org/2000/svg" width="180" height="78"><foreignObject width="180" height="78">${html.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}</foreignObject></svg>`;
+        const img = new Image();
+        img.onload = () => {
+            ctx.drawImage(img, 0, 0, 180, 78);
+            const link = document.createElement('a');
+            link.download = `channel-tag-${state}-${Date.now()}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            showToast('✅ 已下载 ' + (state==='active'?'选中':'常态') + ' 标签');
+        };
+        img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+    }
+
+    // === 初始化 ===
+    updatePreview();
+})();
+</script>
+</body>
+</html> id="cutoutPreviewCanvas" style="max-width:200px;max-height:40px;border-radius:4px;background:repeating-conic-gradient(#333 0% 25%, #222 0% 50%) 50% / 10px 10px;"></canvas.onmousedown = (e) => { cropStart = {x: e.offsetX, y: e.offsetY}; cropEnd = null; };
+        canvas.onmousemove = (e) => {
+            if (!cropStart) return;
+            cropEnd = {x: e.offsetX, y: e.offsetY};
+            const ctx2 = canvas.getContext('2d');
+            ctx2.drawImage(refImageData, 0, 0, canvas.width, canvas.height);
+            ctx2.strokeStyle = '#22c55e';
+            ctx2.lineWidth = 2;
+            ctx2.setLineDash([6,3]);
+            const x = Math.min(cropStart.x, cropEnd.x);
+            const y = Math.min(cropStart.y, cropEnd.y);
+            const w = Math.abs(cropEnd.x - cropStart.x);
+            const h = Math.abs(cropEnd.y - cropStart.y);
+            ctx2.strokeRect(x, y, w, h);
+        };
+        canvas.onmouseup = (e) => { cropEnd = {x: e.offsetX, y: e.offsetY}; };
+    }
+
+    function confirmCrop() {
+        if (!cropStart || !cropEnd) { showToast('请先框选区域'); return; }
+        const canvas = document.getElementById('cropCanvas');
+        const x = Math.min(cropStart.x, cropEnd.x);
+        const y = Math.min(cropStart.y, cropEnd.y);
+        const w = Math.abs(cropEnd.x - cropStart.x);
+        const h = Math.abs(cropEnd.y - cropStart.y);
+        if (w < 5 || h < 5) { showToast('框选区域太小'); return; }
+        const croppedCanvas = document.createElement('canvas');
+        croppedCanvas.width = w; croppedCanvas.height = h;
+        croppedCanvas.getContext('2d').drawImage(canvas, x, y, w, h, 0, 0, w, h);
+        rawCropData = { canvas: croppedCanvas, width: w, height: h, scale: canvas._scale };
+        document.getElementById('cropArea').style.display = 'none';
+        document.getElementById('cutoutPreview').style.display = 'block';
+        updateCutoutPreview();
+    }
+
+    function cancelCrop() {
+        document.getElementById('cropArea').style.display = 'none';
+        cropStart = null; cropEnd = null;
+    }
+
+    function removeImageBackground(imageData, tolerance) {
+        const data = imageData.data;
+        const bgColor = {r: data[0], g: data[1], b: data[2]};
+        const corners = [
+            {r: data[0], g: data[1], b: data[2]},
+            {r: data[(imageData.width-1)*4], g: data[(imageData.width-1)*4+1], b: data[(imageData.width-1)*4+2]},
+            {r: data[(imageData.height-1)*imageData.width*4], g: data[(imageData.height-1)*imageData.width*4+1], b: data[(imageData.height-1)*imageData.width*4+2]},
+            {r: data[((imageData.height-1)*imageData.width+imageData.width-1)*4], g: data[((imageData.height-1)*imageData.width+imageData.width-1)*4+1], b: data[((imageData.height-1)*imageData.width+imageData.width-1)*4+2]}
+        ];
+        const avgBg = {r:0,g:0,b:0};
+        corners.forEach(c => { avgBg.r+=c.r; avgBg.g+=c.g; avgBg.b+=c.b; });
+        avgBg.r = Math.round(avgBg.r/4); avgBg.g = Math.round(avgBg.g/4); avgBg.b = Math.round(avgBg.b/4);
+        for (let i = 0; i < data.length; i += 4) {
+            const dr = data[i]-avgBg.r, dg = data[i+1]-avgBg.g, db = data[i+2]-avgBg.b;
+            const dist = Math.sqrt(dr*dr+dg*dg+db*db);
+            if (dist < tolerance * 4.5) data[i+3] = 0;
+        }
+    }
+
+    function updateCutoutPreview() {
+        if (!rawCropData) return;
+        const tolerance = parseInt(document.getElementById('cutoutTolerance').value);
+        document.getElementById('cutoutToleranceVal').textContent = tolerance;
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = rawCropData.width; tempCanvas.height = rawCropData.height;
+        const ctx = tempCanvas.getContext('2d');
+        ctx.drawImage(rawCropData.canvas, 0, 0);
+        const imageData = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+        removeImageBackground(imageData, tolerance);
+        ctx.putImageData(imageData, 0, 0);
+        const previewCanvas = document.getElementById('cutoutPreviewCanvas');
+        const scale = parseFloat(document.getElementById('cutoutScale').value) / 100;
+        previewCanvas.width = rawCropData.width * scale;
+        previewCanvas.height = rawCropData.height * scale;
+        const pctx = previewCanvas.getContext('2d');
+        pctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+        pctx.drawImage(tempCanvas, 0, 0, previewCanvas.width, previewCanvas.height);
+    }
+
+    function updateCutoutScale() {
+        const v = parseInt(document.getElementById('cutoutScale').value);
+        document.getElementById('cutoutScaleVal').textContent = (v/100).toFixed(1);
+        updateCutoutPreview();
+    }
+
+    function updateCutoutPosition() {
+        document.getElementById('cutoutXVal').textContent = document.getElementById('cutoutOffsetX').value;
+        document.getElementById('cutoutYVal').textContent = document.getElementById('cutoutOffsetY').value;
+        if (croppedTextImage) applyCutoutToTag();
+    }
+
+    function applyCutoutToTag() {
+        if (!rawCropData) return;
+        const tolerance = parseInt(document.getElementById('cutoutTolerance').value);
+        const scale = parseInt(document.getElementById('cutoutScale').value) / 100;
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = rawCropData.width; tempCanvas.height = rawCropData.height;
+        const ctx = tempCanvas.getContext('2d');
+        ctx.drawImage(rawCropData.canvas, 0, 0);
+        const imageData = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+        removeImageBackground(imageData, tolerance);
+        ctx.putImageData(imageData, 0, 0);
+        const offsetX = parseInt(document.getElementById('cutoutOffsetX').value);
+        const offsetY = parseInt(document.getElementById('cutoutOffsetY').value);
+        croppedTextImage = { canvas: tempCanvas, scale, offsetX, offsetY };
+        const rawTitle = tagTitle.value || '';
+        [tagNormal, tagActive].forEach(tag => {
+            tag.querySelectorAll('.cropped-text-img').forEach(el => el.remove());
+            tag.innerHTML = '';
+            if (rawTitle) { const span = document.createElement('span'); span.innerHTML = formatTitle(rawTitle); span.style.display = 'none'; tag.appendChild(span); }
+            const img = document.createElement('canvas');
+            img.className = 'cropped-text-img';
+            img.width = tempCanvas.width * scale;
+            img.height = tempCanvas.height * scale;
+            img.style.position = 'absolute';
+            img.style.left = offsetX + 'px';
+            img.style.top = offsetY + 'px';
+            img.getContext('2d').drawImage(tempCanvas, 0, 0, img.width, img.height);
+            tag.appendChild(img);
+        });
+        showToast('📌 已合成到标签');
+    }
+
+    // === 下载 ===
+    function downloadTag(state) {
+        const tag = state === 'active' ? tagActive : tagNormal;
+        const tagRect = tag.getBoundingClientRect();
+        const wrapper = tag.parentElement;
+        const wrapperRect = wrapper.getBoundingClientRect();
+        const canvas = document.createElement('canvas');
+        canvas.width = 180 * 2;
+        canvas.height = 78 * 2;
+        const ctx = canvas.getContext('2d');
+        ctx.scale(2, 2);
+        const html = tag.outerHTML;
+        const svgData = `<svg xmlns="http://www.w3.org/2000/svg" width="180" height="78"><foreignObject width="180" height="78">${html.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}</foreignObject></svg>`;
+        const img = new Image();
+        img.onload = () => {
+            ctx.drawImage(img, 0, 0, 180, 78);
+            const link = document.createElement('a');
+            link.download = `channel-tag-${state}-${Date.now()}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            showToast('✅ 已下载 ' + (state==='active'?'选中':'常态') + ' 标签');
+        };
+        img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+    }
+
+    // === 初始化 ===
+    updatePreview();
+})();
+</script>
+</body>
+</html>>
+                    <div style="display:flex;flex-direction:column;gap:6px;">
+                        <label style="font-size:11px;color:#888;">去背景强度: <span id="cutoutToleranceVal">40</span></label>
+                        <input type="range" id="cutoutTolerance" min="10" max="100" value="40" oninput="updateCutoutPreview()" style="width:120px;">
+                        <label style="font-size:11px;color:#888;">文字缩放: <span id="cutoutScaleVal">1.0</span>x</label>
+                        <input type="range" id="cutoutScale" min="50" max="200" value="100" oninput="updateCutoutScale()" style="width:120px;">
+                        <label style="font-size:11px;color:#888;">水平位置(X): <span id="cutoutXVal">30</span>px</label>
+                        <input type="range" id="cutoutOffsetX" min="0" max="100" value="30" oninput="updateCutoutPosition()" style="width:120px;">
+                        <label style="font-size:11px;color:#888;">垂直位置(Y): <span id="cutoutYVal">24</span>px</label>
+                        <input type="range" id="cutoutOffsetY" min="0" max="54" value="24" oninput="updateCutoutPosition()" style="width:120px;">
+                        <button class="download-btn" onclick="applyCutoutToTag()" style="background:#6366f1;border-color:#6366f1;font-size:13px;">📌 合成到标签</button>
+                    </div>
+                </div>
+            </div>
+            <div id="matchResults"></div>
+        </div>
+        <div class="preview-grid">
+            <div class="preview-item">
+                <div class="label">✦ 常态</div>
+                <div class="tag-wrapper">
+                    <div class="tag style-solid" id="tagNormal">设计频道</div>
+                    <div class="tag-guide"></div>
+                </div>
+                <button class="download-btn" onclick="downloadTag('normal')" style="margin-top:10px;">⬇ 下载常态标签 (PNG)</button>
+            </div>
+            <div class="preview-item">
+                <div class="label">✦ 选中状态</div>
+                <div class="tag-wrapper">
+                    <div class="tag style-solid active-state" id="tagActive">设计频道</div>
+                    <div class="tag-guide"></div>
+                </div>
+                <button class="download-btn" onclick="downloadTag('active')" style="margin-top:10px;">⬇ 下载选中标签 (PNG)</button>
+            </div>
+            <div class="preview-item">
+                <div class="label" style="color:#8888a088;">✦ 尺寸: 180 × 78 px</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="css-output" id="cssOutput">
+    <div class="css-title">📋 CSS 代码 <button onclick="copyCSS()">📋 复制</button></div>
+    <pre id="cssCode"></pre>
+</div>
+
+<div class="toast" id="toast">已复制到剪贴板!</div>
+
+<script>
+(function() {
+    const tagTitle = document.getElementById('tagTitle');
+    const tagFont = document.getElementById('tagFont');
+    const normalBg = document.getElementById('normalBg');
+    const normalText = document.getElementById('normalText');
+    const activeBg = document.getElementById('activeBg');
+    const activeText = document.getElementById('activeText');
+    const tagNormal = document.getElementById('tagNormal');
+    const tagActive = document.getElementById('tagActive');
+    const cssCode = document.getElementById('cssCode');
+
+    let currentStyle = 'solid';
+    let croppedTextImage = null;
+    let rawCropData = null;
+    let refImageData = null;
+    let cropStart = null, cropEnd = null;
+    const installedFonts = [];
+
+    // === 预设配色 ===
+    const presets = [
+        { name:'Indigo', normalBg:'#2a2a4a', normalText:'#a0a0c0', activeBg:'#6366f1', activeText:'#ffffff' },
+        { name:'Emerald', normalBg:'#1a3a2a', normalText:'#6ee7b7', activeBg:'#10b981', activeText:'#ffffff' },
+        { name:'Rose', normalBg:'#3a1a2a', normalText:'#fda4af', activeBg:'#f43f5e', activeText:'#ffffff' },
+        { name:'Amber', normalBg:'#3a2a1a', normalText:'#fcd34d', activeBg:'#f59e0b', activeText:'#1a1a1a' },
+        { name:'Sky', normalBg:'#1a2a3a', normalText:'#7dd3fc', activeBg:'#0ea5e9', activeText:'#ffffff' },
+        { name:'Violet', normalBg:'#2a1a3a', normalText:'#c4b5fd', activeBg:'#8b5cf6', activeText:'#ffffff' },
+        { name:'Teal', normalBg:'#1a3a3a', normalText:'#5eead4', activeBg:'#14b8a6', activeText:'#ffffff' },
+        { name:'Slate', normalBg:'#2a2a2a', normalText:'#a0a0a0', activeBg:'#475569', activeText:'#ffffff' },
+    ];
+
+    const pc = document.getElementById('presets');
+    presets.forEach((p,i) => {
+        const d = document.createElement('div');
+        d.className = 'preset-dot';
+        d.style.background = `linear-gradient(135deg, ${p.activeBg}, ${p.normalBg})`;
+        d.title = p.name;
+        d.onclick = () => {
+            normalBg.value = p.normalBg; normalText.value = p.normalText;
+            activeBg.value = p.activeBg; activeText.value = p.activeText;
+            document.getElementById('normalBgHex').textContent = p.normalBg;
+            document.getElementById('normalTextHex').textContent = p.normalText;
+            document.getElementById('activeBgHex').textContent = p.activeBg;
+            document.getElementById('activeTextHex').textContent = p.activeText;
+            updatePreview();
+        };
+        pc.appendChild(d);
+    });
+
+    // === 样式切换 ===
+    document.querySelectorAll('.style-option').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.style-option').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentStyle = btn.dataset.style;
+            updatePreview();
+        });
+    });
+
+    // === 颜色输入 ===
+    [normalBg, normalText, activeBg, activeText].forEach(input => {
+        input.addEventListener('input', () => {
+            document.getElementById(input.id + 'Hex').textContent = input.value;
+            updatePreview();
+        });
+    });
+
+    tagTitle.addEventListener('input', updatePreview);
+    tagFont.addEventListener('change', updatePreview);
+
+    function toFullWidth(text) {
+        return text.replace(/[0-9]/g, c => String.fromCharCode(c.charCodeAt(0)+0xFEE0))
+                   .replace(/[A-Z]/g, c => String.fromCharCode(c.charCodeAt(0)+0xFEE0))
+                   .replace(/[a-z]/g, c => String.fromCharCode(c.charCodeAt(0)+0xFEE0));
+    }
+
+    function formatTitle(text) {
+        return text.replace(/[0-9]+/g, '<span class="num-compact">$&</span>');
+    }
+
+    function updatePreview() {
+        const rawTitle = tagTitle.value || '频道';
+        const ft = formatTitle(rawTitle);
+        const font = tagFont.value;
+        const nBg = normalBg.value, nText = normalText.value;
+        const aBg = activeBg.value, aText = activeText.value;
+        if (rawTitle && croppedTextImage) {
+            croppedTextImage = null;
+            document.querySelectorAll('.cropped-text-img').forEach(el => el.remove());
+        }
+        [tagNormal, tagActive].forEach(tag => {
+            tag.style.setProperty('--tag-bg', nBg);
+            tag.style.setProperty('--tag-text', nText);
+            tag.style.setProperty('--tag-active-bg', aBg);
+            tag.style.setProperty('--tag-active-text', aText);
+            tag.style.setProperty('--tag-font', font);
+            if (!tag.querySelector('.cropped-text-img')) tag.innerHTML = ft;
+            tag.className = tag.className.replace(/style-\w+/g, '');
+            tag.classList.add('style-' + currentStyle);
+        });
+        tagActive.classList.add('active-state');
+        tagNormal.classList.remove('active-state');
+        updateCSS();
+    }
+
+    function updateCSS() {
+        const font = tagFont.value;
+        const radius = currentStyle === 'pill' ? '39px' : '12px';
+        const normalCSS = `  background: transparent;\n  border: none;\n  color: ${normalText.value};`;
+        const hoverCSS = `\n  background: ${activeBg.value};\n  color: ${activeText.value};\n  box-shadow: 0 0 0 3px ${activeBg.value}, 0 8px 24px rgba(0,0,0,0.3);`;
+        cssCode.textContent = `.channel-tag {\n  width: 180px;\n  height: 78px;\n  border-radius: ${radius};\n  display: flex;\n  align-items: center;\n  justify-content: flex-start;\n  padding: 24px 30px;\n  font-size: 28px;\n  line-height: 28px;\n  font-weight: 700;\n  font-family: ${font};\n  box-sizing: border-box;\n${normalCSS}\n  cursor: pointer;\n  transition: all 0.3s ease;\n}\n\n.channel-tag:hover,\n.channel-tag.active {${hoverCSS}\n}`;
+    }
+
+    function copyCSS() { navigator.clipboard.writeText(cssCode.textContent).then(() => showToast('CSS 已复制!')); }
+    function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('visible'); setTimeout(() => t.classList.remove('visible'), 1800); }
+
+    // === 字体安装 ===
+    function installFont(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const ext = file.name.split('.').pop().toLowerCase();
+        if (!['ttf','otf','woff','woff2'].includes(ext)) { showToast('请上传 .ttf/.otf/.woff/.woff2'); return; }
+        let fontName = file.name.replace(/\.[^.]+$/,'').replace(/[_-]/g,' ').trim();
+        const customName = prompt('字体名称（可修改）：', fontName);
+        if (!customName) return;
+        fontName = customName;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const ff = new FontFace(fontName, `url(${e.target.result})`);
+                ff.load().then(lf => {
+                    document.fonts.add(lf);
+                    const opt = document.createElement('option');
+                    opt.value = `'${fontName}', sans-serif`;
+                    opt.textContent = '📁 ' + fontName;
+                    document.getElementById('installedFontsGroup').appendChild(opt);
+                    tagFont.value = opt.value;
+                    installedFonts.push({ name: fontName, url: e.target.result });
+                    updatePreview();
+                    showToast('✅ 字体 "' + fontName + '" 已安装！');
+                }).catch(() => showToast('❌ 字体加载失败'));
+            } catch(e) { showToast('❌ 字体格式不支持'); }
+        };
+        reader.readAsDataURL(file);
+        event.target.value = '';
+    }
+
+    // === 参考图 ===
+    function handleRefUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+                refImageData = img;
+                document.getElementById('refPreviewImg').src = e.target.result;
+                document.getElementById('refPreviewRow').style.display = 'flex';
+                document.getElementById('refSection').classList.add('has-image');
+                document.getElementById('matchBtn').disabled = false;
+                document.getElementById('cropBtn').disabled = false;
+                document.getElementById('extractedPalette').innerHTML = '';
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function extractColors() {
+        if (!refImageData) return;
+        const btn = document.getElementById('matchBtn');
+        btn.disabled = true; btn.textContent = '⏳ 分析中...';
+        const canvas.onmousedown = (e) => { cropStart = {x: e.offsetX, y: e.offsetY}; cropEnd = null; };
+        canvas.onmousemove = (e) => {
+            if (!cropStart) return;
+            cropEnd = {x: e.offsetX, y: e.offsetY};
+            const ctx2 = canvas.getContext('2d');
+            ctx2.drawImage(refImageData, 0, 0, canvas.width, canvas.height);
+            ctx2.strokeStyle = '#22c55e';
+            ctx2.lineWidth = 2;
+            ctx2.setLineDash([6,3]);
+            const x = Math.min(cropStart.x, cropEnd.x);
+            const y = Math.min(cropStart.y, cropEnd.y);
+            const w = Math.abs(cropEnd.x - cropStart.x);
+            const h = Math.abs(cropEnd.y - cropStart.y);
+            ctx2.strokeRect(x, y, w, h);
+        };
+        canvas.onmouseup = (e) => { cropEnd = {x: e.offsetX, y: e.offsetY}; };
+    }
+
+    function confirmCrop() {
+        if (!cropStart || !cropEnd) { showToast('请先框选区域'); return; }
+        const canvas = document.getElementById('cropCanvas');
+        const x = Math.min(cropStart.x, cropEnd.x);
+        const y = Math.min(cropStart.y, cropEnd.y);
+        const w = Math.abs(cropEnd.x - cropStart.x);
+        const h = Math.abs(cropEnd.y - cropStart.y);
+        if (w < 5 || h < 5) { showToast('框选区域太小'); return; }
+        const croppedCanvas = document.createElement('canvas');
+        croppedCanvas.width = w; croppedCanvas.height = h;
+        croppedCanvas.getContext('2d').drawImage(canvas, x, y, w, h, 0, 0, w, h);
+        rawCropData = { canvas: croppedCanvas, width: w, height: h, scale: canvas._scale };
+        document.getElementById('cropArea').style.display = 'none';
+        document.getElementById('cutoutPreview').style.display = 'block';
+        updateCutoutPreview();
+    }
+
+    function cancelCrop() {
+        document.getElementById('cropArea').style.display = 'none';
+        cropStart = null; cropEnd = null;
+    }
+
+    function removeImageBackground(imageData, tolerance) {
+        const data = imageData.data;
+        const bgColor = {r: data[0], g: data[1], b: data[2]};
+        const corners = [
+            {r: data[0], g: data[1], b: data[2]},
+            {r: data[(imageData.width-1)*4], g: data[(imageData.width-1)*4+1], b: data[(imageData.width-1)*4+2]},
+            {r: data[(imageData.height-1)*imageData.width*4], g: data[(imageData.height-1)*imageData.width*4+1], b: data[(imageData.height-1)*imageData.width*4+2]},
+            {r: data[((imageData.height-1)*imageData.width+imageData.width-1)*4], g: data[((imageData.height-1)*imageData.width+imageData.width-1)*4+1], b: data[((imageData.height-1)*imageData.width+imageData.width-1)*4+2]}
+        ];
+        const avgBg = {r:0,g:0,b:0};
+        corners.forEach(c => { avgBg.r+=c.r; avgBg.g+=c.g; avgBg.b+=c.b; });
+        avgBg.r = Math.round(avgBg.r/4); avgBg.g = Math.round(avgBg.g/4); avgBg.b = Math.round(avgBg.b/4);
+        for (let i = 0; i < data.length; i += 4) {
+            const dr = data[i]-avgBg.r, dg = data[i+1]-avgBg.g, db = data[i+2]-avgBg.b;
+            const dist = Math.sqrt(dr*dr+dg*dg+db*db);
+            if (dist < tolerance * 4.5) data[i+3] = 0;
+        }
+    }
+
+    function updateCutoutPreview() {
+        if (!rawCropData) return;
+        const tolerance = parseInt(document.getElementById('cutoutTolerance').value);
+        document.getElementById('cutoutToleranceVal').textContent = tolerance;
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = rawCropData.width; tempCanvas.height = rawCropData.height;
+        const ctx = tempCanvas.getContext('2d');
+        ctx.drawImage(rawCropData.canvas, 0, 0);
+        const imageData = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+        removeImageBackground(imageData, tolerance);
+        ctx.putImageData(imageData, 0, 0);
+        const previewCanvas = document.getElementById('cutoutPreviewCanvas');
+        const scale = parseFloat(document.getElementById('cutoutScale').value) / 100;
+        previewCanvas.width = rawCropData.width * scale;
+        previewCanvas.height = rawCropData.height * scale;
+        const pctx = previewCanvas.getContext('2d');
+        pctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+        pctx.drawImage(tempCanvas, 0, 0, previewCanvas.width, previewCanvas.height);
+    }
+
+    function updateCutoutScale() {
+        const v = parseInt(document.getElementById('cutoutScale').value);
+        document.getElementById('cutoutScaleVal').textContent = (v/100).toFixed(1);
+        updateCutoutPreview();
+    }
+
+    function updateCutoutPosition() {
+        document.getElementById('cutoutXVal').textContent = document.getElementById('cutoutOffsetX').value;
+        document.getElementById('cutoutYVal').textContent = document.getElementById('cutoutOffsetY').value;
+        if (croppedTextImage) applyCutoutToTag();
+    }
+
+    function applyCutoutToTag() {
+        if (!rawCropData) return;
+        const tolerance = parseInt(document.getElementById('cutoutTolerance').value);
+        const scale = parseInt(document.getElementById('cutoutScale').value) / 100;
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = rawCropData.width; tempCanvas.height = rawCropData.height;
+        const ctx = tempCanvas.getContext('2d');
+        ctx.drawImage(rawCropData.canvas, 0, 0);
+        const imageData = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+        removeImageBackground(imageData, tolerance);
+        ctx.putImageData(imageData, 0, 0);
+        const offsetX = parseInt(document.getElementById('cutoutOffsetX').value);
+        const offsetY = parseInt(document.getElementById('cutoutOffsetY').value);
+        croppedTextImage = { canvas: tempCanvas, scale, offsetX, offsetY };
+        const rawTitle = tagTitle.value || '';
+        [tagNormal, tagActive].forEach(tag => {
+            tag.querySelectorAll('.cropped-text-img').forEach(el => el.remove());
+            tag.innerHTML = '';
+            if (rawTitle) { const span = document.createElement('span'); span.innerHTML = formatTitle(rawTitle); span.style.display = 'none'; tag.appendChild(span); }
+            const img = document.createElement('canvas');
+            img.className = 'cropped-text-img';
+            img.width = tempCanvas.width * scale;
+            img.height = tempCanvas.height * scale;
+            img.style.position = 'absolute';
+            img.style.left = offsetX + 'px';
+            img.style.top = offsetY + 'px';
+            img.getContext('2d').drawImage(tempCanvas, 0, 0, img.width, img.height);
+            tag.appendChild(img);
+        });
+        showToast('📌 已合成到标签');
+    }
+
+    // === 下载 ===
+    function downloadTag(state) {
+        const tag = state === 'active' ? tagActive : tagNormal;
+        const tagRect = tag.getBoundingClientRect();
+        const wrapper = tag.parentElement;
+        const wrapperRect = wrapper.getBoundingClientRect();
+        const canvas = document.createElement('canvas');
+        canvas.width = 180 * 2;
+        canvas.height = 78 * 2;
+        const ctx = canvas.getContext('2d');
+        ctx.scale(2, 2);
+        const html = tag.outerHTML;
+        const svgData = `<svg xmlns="http://www.w3.org/2000/svg" width="180" height="78"><foreignObject width="180" height="78">${html.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}</foreignObject></svg>`;
+        const img = new Image();
+        img.onload = () => {
+            ctx.drawImage(img, 0, 0, 180, 78);
+            const link = document.createElement('a');
+            link.download = `channel-tag-${state}-${Date.now()}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            showToast('✅ 已下载 ' + (state==='active'?'选中':'常态') + ' 标签');
+        };
+        img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+    }
+
+    // === 初始化 ===
+    updatePreview();
+})();
+</script>
+</body>
+</html> = document.createElement('canvas.onmousedown = (e) => { cropStart = {x: e.offsetX, y: e.offsetY}; cropEnd = null; };
+        canvas.onmousemove = (e) => {
+            if (!cropStart) return;
+            cropEnd = {x: e.offsetX, y: e.offsetY};
+            const ctx2 = canvas.getContext('2d');
+            ctx2.drawImage(refImageData, 0, 0, canvas.width, canvas.height);
+            ctx2.strokeStyle = '#22c55e';
+            ctx2.lineWidth = 2;
+            ctx2.setLineDash([6,3]);
+            const x = Math.min(cropStart.x, cropEnd.x);
+            const y = Math.min(cropStart.y, cropEnd.y);
+            const w = Math.abs(cropEnd.x - cropStart.x);
+            const h = Math.abs(cropEnd.y - cropStart.y);
+            ctx2.strokeRect(x, y, w, h);
+        };
+        canvas.onmouseup = (e) => { cropEnd = {x: e.offsetX, y: e.offsetY}; };
+    }
+
+    function confirmCrop() {
+        if (!cropStart || !cropEnd) { showToast('请先框选区域'); return; }
+        const canvas = document.getElementById('cropCanvas');
+        const x = Math.min(cropStart.x, cropEnd.x);
+        const y = Math.min(cropStart.y, cropEnd.y);
+        const w = Math.abs(cropEnd.x - cropStart.x);
+        const h = Math.abs(cropEnd.y - cropStart.y);
+        if (w < 5 || h < 5) { showToast('框选区域太小'); return; }
+        const croppedCanvas = document.createElement('canvas');
+        croppedCanvas.width = w; croppedCanvas.height = h;
+        croppedCanvas.getContext('2d').drawImage(canvas, x, y, w, h, 0, 0, w, h);
+        rawCropData = { canvas: croppedCanvas, width: w, height: h, scale: canvas._scale };
+        document.getElementById('cropArea').style.display = 'none';
+        document.getElementById('cutoutPreview').style.display = 'block';
+        updateCutoutPreview();
+    }
+
+    function cancelCrop() {
+        document.getElementById('cropArea').style.display = 'none';
+        cropStart = null; cropEnd = null;
+    }
+
+    function removeImageBackground(imageData, tolerance) {
+        const data = imageData.data;
+        const bgColor = {r: data[0], g: data[1], b: data[2]};
+        const corners = [
+            {r: data[0], g: data[1], b: data[2]},
+            {r: data[(imageData.width-1)*4], g: data[(imageData.width-1)*4+1], b: data[(imageData.width-1)*4+2]},
+            {r: data[(imageData.height-1)*imageData.width*4], g: data[(imageData.height-1)*imageData.width*4+1], b: data[(imageData.height-1)*imageData.width*4+2]},
+            {r: data[((imageData.height-1)*imageData.width+imageData.width-1)*4], g: data[((imageData.height-1)*imageData.width+imageData.width-1)*4+1], b: data[((imageData.height-1)*imageData.width+imageData.width-1)*4+2]}
+        ];
+        const avgBg = {r:0,g:0,b:0};
+        corners.forEach(c => { avgBg.r+=c.r; avgBg.g+=c.g; avgBg.b+=c.b; });
+        avgBg.r = Math.round(avgBg.r/4); avgBg.g = Math.round(avgBg.g/4); avgBg.b = Math.round(avgBg.b/4);
+        for (let i = 0; i < data.length; i += 4) {
+            const dr = data[i]-avgBg.r, dg = data[i+1]-avgBg.g, db = data[i+2]-avgBg.b;
+            const dist = Math.sqrt(dr*dr+dg*dg+db*db);
+            if (dist < tolerance * 4.5) data[i+3] = 0;
+        }
+    }
+
+    function updateCutoutPreview() {
+        if (!rawCropData) return;
+        const tolerance = parseInt(document.getElementById('cutoutTolerance').value);
+        document.getElementById('cutoutToleranceVal').textContent = tolerance;
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = rawCropData.width; tempCanvas.height = rawCropData.height;
+        const ctx = tempCanvas.getContext('2d');
+        ctx.drawImage(rawCropData.canvas, 0, 0);
+        const imageData = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+        removeImageBackground(imageData, tolerance);
+        ctx.putImageData(imageData, 0, 0);
+        const previewCanvas = document.getElementById('cutoutPreviewCanvas');
+        const scale = parseFloat(document.getElementById('cutoutScale').value) / 100;
+        previewCanvas.width = rawCropData.width * scale;
+        previewCanvas.height = rawCropData.height * scale;
+        const pctx = previewCanvas.getContext('2d');
+        pctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+        pctx.drawImage(tempCanvas, 0, 0, previewCanvas.width, previewCanvas.height);
+    }
+
+    function updateCutoutScale() {
+        const v = parseInt(document.getElementById('cutoutScale').value);
+        document.getElementById('cutoutScaleVal').textContent = (v/100).toFixed(1);
+        updateCutoutPreview();
+    }
+
+    function updateCutoutPosition() {
+        document.getElementById('cutoutXVal').textContent = document.getElementById('cutoutOffsetX').value;
+        document.getElementById('cutoutYVal').textContent = document.getElementById('cutoutOffsetY').value;
+        if (croppedTextImage) applyCutoutToTag();
+    }
+
+    function applyCutoutToTag() {
+        if (!rawCropData) return;
+        const tolerance = parseInt(document.getElementById('cutoutTolerance').value);
+        const scale = parseInt(document.getElementById('cutoutScale').value) / 100;
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = rawCropData.width; tempCanvas.height = rawCropData.height;
+        const ctx = tempCanvas.getContext('2d');
+        ctx.drawImage(rawCropData.canvas, 0, 0);
+        const imageData = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+        removeImageBackground(imageData, tolerance);
+        ctx.putImageData(imageData, 0, 0);
+        const offsetX = parseInt(document.getElementById('cutoutOffsetX').value);
+        const offsetY = parseInt(document.getElementById('cutoutOffsetY').value);
+        croppedTextImage = { canvas: tempCanvas, scale, offsetX, offsetY };
+        const rawTitle = tagTitle.value || '';
+        [tagNormal, tagActive].forEach(tag => {
+            tag.querySelectorAll('.cropped-text-img').forEach(el => el.remove());
+            tag.innerHTML = '';
+            if (rawTitle) { const span = document.createElement('span'); span.innerHTML = formatTitle(rawTitle); span.style.display = 'none'; tag.appendChild(span); }
+            const img = document.createElement('canvas');
+            img.className = 'cropped-text-img';
+            img.width = tempCanvas.width * scale;
+            img.height = tempCanvas.height * scale;
+            img.style.position = 'absolute';
+            img.style.left = offsetX + 'px';
+            img.style.top = offsetY + 'px';
+            img.getContext('2d').drawImage(tempCanvas, 0, 0, img.width, img.height);
+            tag.appendChild(img);
+        });
+        showToast('📌 已合成到标签');
+    }
+
+    // === 下载 ===
+    function downloadTag(state) {
+        const tag = state === 'active' ? tagActive : tagNormal;
+        const tagRect = tag.getBoundingClientRect();
+        const wrapper = tag.parentElement;
+        const wrapperRect = wrapper.getBoundingClientRect();
+        const canvas = document.createElement('canvas');
+        canvas.width = 180 * 2;
+        canvas.height = 78 * 2;
+        const ctx = canvas.getContext('2d');
+        ctx.scale(2, 2);
+        const html = tag.outerHTML;
+        const svgData = `<svg xmlns="http://www.w3.org/2000/svg" width="180" height="78"><foreignObject width="180" height="78">${html.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}</foreignObject></svg>`;
+        const img = new Image();
+        img.onload = () => {
+            ctx.drawImage(img, 0, 0, 180, 78);
+            const link = document.createElement('a');
+            link.download = `channel-tag-${state}-${Date.now()}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            showToast('✅ 已下载 ' + (state==='active'?'选中':'常态') + ' 标签');
+        };
+        img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+    }
+
+    // === 初始化 ===
+    updatePreview();
+})();
+</script>
+</body>
+</html>');
+        const size = 100;
+        canvas.onmousedown = (e) => { cropStart = {x: e.offsetX, y: e.offsetY}; cropEnd = null; };
+        canvas.onmousemove = (e) => {
+            if (!cropStart) return;
+            cropEnd = {x: e.offsetX, y: e.offsetY};
+            const ctx2 = canvas.getContext('2d');
+            ctx2.drawImage(refImageData, 0, 0, canvas.width, canvas.height);
+            ctx2.strokeStyle = '#22c55e';
+            ctx2.lineWidth = 2;
+            ctx2.setLineDash([6,3]);
+            const x = Math.min(cropStart.x, cropEnd.x);
+            const y = Math.min(cropStart.y, cropEnd.y);
+            const w = Math.abs(cropEnd.x - cropStart.x);
+            const h = Math.abs(cropEnd.y - cropStart.y);
+            ctx2.strokeRect(x, y, w, h);
+        };
+        canvas.onmouseup = (e) => { cropEnd = {x: e.offsetX, y: e.offsetY}; };
+    }
+
+    function confirmCrop() {
+        if (!cropStart || !cropEnd) { showToast('请先框选区域'); return; }
+        const canvas = document.getElementById('cropCanvas');
+        const x = Math.min(cropStart.x, cropEnd.x);
+        const y = Math.min(cropStart.y, cropEnd.y);
+        const w = Math.abs(cropEnd.x - cropStart.x);
+        const h = Math.abs(cropEnd.y - cropStart.y);
+        if (w < 5 || h < 5) { showToast('框选区域太小'); return; }
+        const croppedCanvas = document.createElement('canvas');
+        croppedCanvas.width = w; croppedCanvas.height = h;
+        croppedCanvas.getContext('2d').drawImage(canvas, x, y, w, h, 0, 0, w, h);
+        rawCropData = { canvas: croppedCanvas, width: w, height: h, scale: canvas._scale };
+        document.getElementById('cropArea').style.display = 'none';
+        document.getElementById('cutoutPreview').style.display = 'block';
+        updateCutoutPreview();
+    }
+
+    function cancelCrop() {
+        document.getElementById('cropArea').style.display = 'none';
+        cropStart = null; cropEnd = null;
+    }
+
+    function removeImageBackground(imageData, tolerance) {
+        const data = imageData.data;
+        const bgColor = {r: data[0], g: data[1], b: data[2]};
+        const corners = [
+            {r: data[0], g: data[1], b: data[2]},
+            {r: data[(imageData.width-1)*4], g: data[(imageData.width-1)*4+1], b: data[(imageData.width-1)*4+2]},
+            {r: data[(imageData.height-1)*imageData.width*4], g: data[(imageData.height-1)*imageData.width*4+1], b: data[(imageData.height-1)*imageData.width*4+2]},
+            {r: data[((imageData.height-1)*imageData.width+imageData.width-1)*4], g: data[((imageData.height-1)*imageData.width+imageData.width-1)*4+1], b: data[((imageData.height-1)*imageData.width+imageData.width-1)*4+2]}
+        ];
+        const avgBg = {r:0,g:0,b:0};
+        corners.forEach(c => { avgBg.r+=c.r; avgBg.g+=c.g; avgBg.b+=c.b; });
+        avgBg.r = Math.round(avgBg.r/4); avgBg.g = Math.round(avgBg.g/4); avgBg.b = Math.round(avgBg.b/4);
+        for (let i = 0; i < data.length; i += 4) {
+            const dr = data[i]-avgBg.r, dg = data[i+1]-avgBg.g, db = data[i+2]-avgBg.b;
+            const dist = Math.sqrt(dr*dr+dg*dg+db*db);
+            if (dist < tolerance * 4.5) data[i+3] = 0;
+        }
+    }
+
+    function updateCutoutPreview() {
+        if (!rawCropData) return;
+        const tolerance = parseInt(document.getElementById('cutoutTolerance').value);
+        document.getElementById('cutoutToleranceVal').textContent = tolerance;
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = rawCropData.width; tempCanvas.height = rawCropData.height;
+        const ctx = tempCanvas.getContext('2d');
+        ctx.drawImage(rawCropData.canvas, 0, 0);
+        const imageData = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+        removeImageBackground(imageData, tolerance);
+        ctx.putImageData(imageData, 0, 0);
+        const previewCanvas = document.getElementById('cutoutPreviewCanvas');
+        const scale = parseFloat(document.getElementById('cutoutScale').value) / 100;
+        previewCanvas.width = rawCropData.width * scale;
+        previewCanvas.height = rawCropData.height * scale;
+        const pctx = previewCanvas.getContext('2d');
+        pctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+        pctx.drawImage(tempCanvas, 0, 0, previewCanvas.width, previewCanvas.height);
+    }
+
+    function updateCutoutScale() {
+        const v = parseInt(document.getElementById('cutoutScale').value);
+        document.getElementById('cutoutScaleVal').textContent = (v/100).toFixed(1);
+        updateCutoutPreview();
+    }
+
+    function updateCutoutPosition() {
+        document.getElementById('cutoutXVal').textContent = document.getElementById('cutoutOffsetX').value;
+        document.getElementById('cutoutYVal').textContent = document.getElementById('cutoutOffsetY').value;
+        if (croppedTextImage) applyCutoutToTag();
+    }
+
+    function applyCutoutToTag() {
+        if (!rawCropData) return;
+        const tolerance = parseInt(document.getElementById('cutoutTolerance').value);
+        const scale = parseInt(document.getElementById('cutoutScale').value) / 100;
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = rawCropData.width; tempCanvas.height = rawCropData.height;
+        const ctx = tempCanvas.getContext('2d');
+        ctx.drawImage(rawCropData.canvas, 0, 0);
+        const imageData = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+        removeImageBackground(imageData, tolerance);
+        ctx.putImageData(imageData, 0, 0);
+        const offsetX = parseInt(document.getElementById('cutoutOffsetX').value);
+        const offsetY = parseInt(document.getElementById('cutoutOffsetY').value);
+        croppedTextImage = { canvas: tempCanvas, scale, offsetX, offsetY };
+        const rawTitle = tagTitle.value || '';
+        [tagNormal, tagActive].forEach(tag => {
+            tag.querySelectorAll('.cropped-text-img').forEach(el => el.remove());
+            tag.innerHTML = '';
+            if (rawTitle) { const span = document.createElement('span'); span.innerHTML = formatTitle(rawTitle); span.style.display = 'none'; tag.appendChild(span); }
+            const img = document.createElement('canvas');
+            img.className = 'cropped-text-img';
+            img.width = tempCanvas.width * scale;
+            img.height = tempCanvas.height * scale;
+            img.style.position = 'absolute';
+            img.style.left = offsetX + 'px';
+            img.style.top = offsetY + 'px';
+            img.getContext('2d').drawImage(tempCanvas, 0, 0, img.width, img.height);
+            tag.appendChild(img);
+        });
+        showToast('📌 已合成到标签');
+    }
+
+    // === 下载 ===
+    function downloadTag(state) {
+        const tag = state === 'active' ? tagActive : tagNormal;
+        const tagRect = tag.getBoundingClientRect();
+        const wrapper = tag.parentElement;
+        const wrapperRect = wrapper.getBoundingClientRect();
+        const canvas = document.createElement('canvas');
+        canvas.width = 180 * 2;
+        canvas.height = 78 * 2;
+        const ctx = canvas.getContext('2d');
+        ctx.scale(2, 2);
+        const html = tag.outerHTML;
+        const svgData = `<svg xmlns="http://www.w3.org/2000/svg" width="180" height="78"><foreignObject width="180" height="78">${html.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}</foreignObject></svg>`;
+        const img = new Image();
+        img.onload = () => {
+            ctx.drawImage(img, 0, 0, 180, 78);
+            const link = document.createElement('a');
+            link.download = `channel-tag-${state}-${Date.now()}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            showToast('✅ 已下载 ' + (state==='active'?'选中':'常态') + ' 标签');
+        };
+        img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+    }
+
+    // === 初始化 ===
+    updatePreview();
+})();
+</script>
+</body>
+</html>.width = size;
+        canvas.onmousedown = (e) => { cropStart = {x: e.offsetX, y: e.offsetY}; cropEnd = null; };
+        canvas.onmousemove = (e) => {
+            if (!cropStart) return;
+            cropEnd = {x: e.offsetX, y: e.offsetY};
+            const ctx2 = canvas.getContext('2d');
+            ctx2.drawImage(refImageData, 0, 0, canvas.width, canvas.height);
+            ctx2.strokeStyle = '#22c55e';
+            ctx2.lineWidth = 2;
+            ctx2.setLineDash([6,3]);
+            const x = Math.min(cropStart.x, cropEnd.x);
+            const y = Math.min(cropStart.y, cropEnd.y);
+            const w = Math.abs(cropEnd.x - cropStart.x);
+            const h = Math.abs(cropEnd.y - cropStart.y);
+            ctx2.strokeRect(x, y, w, h);
+        };
+        canvas.onmouseup = (e) => { cropEnd = {x: e.offsetX, y: e.offsetY}; };
+    }
+
+    function confirmCrop() {
+        if (!cropStart || !cropEnd) { showToast('请先框选区域'); return; }
+        const canvas = document.getElementById('cropCanvas');
+        const x = Math.min(cropStart.x, cropEnd.x);
+        const y = Math.min(cropStart.y, cropEnd.y);
+        const w = Math.abs(cropEnd.x - cropStart.x);
+        const h = Math.abs(cropEnd.y - cropStart.y);
+        if (w < 5 || h < 5) { showToast('框选区域太小'); return; }
+        const croppedCanvas = document.createElement('canvas');
+        croppedCanvas.width = w; croppedCanvas.height = h;
+        croppedCanvas.getContext('2d').drawImage(canvas, x, y, w, h, 0, 0, w, h);
+        rawCropData = { canvas: croppedCanvas, width: w, height: h, scale: canvas._scale };
+        document.getElementById('cropArea').style.display = 'none';
+        document.getElementById('cutoutPreview').style.display = 'block';
+        updateCutoutPreview();
+    }
+
+    function cancelCrop() {
+        document.getElementById('cropArea').style.display = 'none';
+        cropStart = null; cropEnd = null;
+    }
+
+    function removeImageBackground(imageData, tolerance) {
+        const data = imageData.data;
+        const bgColor = {r: data[0], g: data[1], b: data[2]};
+        const corners = [
+            {r: data[0], g: data[1], b: data[2]},
+            {r: data[(imageData.width-1)*4], g: data[(imageData.width-1)*4+1], b: data[(imageData.width-1)*4+2]},
+            {r: data[(imageData.height-1)*imageData.width*4], g: data[(imageData.height-1)*imageData.width*4+1], b: data[(imageData.height-1)*imageData.width*4+2]},
+            {r: data[((imageData.height-1)*imageData.width+imageData.width-1)*4], g: data[((imageData.height-1)*imageData.width+imageData.width-1)*4+1], b: data[((imageData.height-1)*imageData.width+imageData.width-1)*4+2]}
+        ];
+        const avgBg = {r:0,g:0,b:0};
+        corners.forEach(c => { avgBg.r+=c.r; avgBg.g+=c.g; avgBg.b+=c.b; });
+        avgBg.r = Math.round(avgBg.r/4); avgBg.g = Math.round(avgBg.g/4); avgBg.b = Math.round(avgBg.b/4);
+        for (let i = 0; i < data.length; i += 4) {
+            const dr = data[i]-avgBg.r, dg = data[i+1]-avgBg.g, db = data[i+2]-avgBg.b;
+            const dist = Math.sqrt(dr*dr+dg*dg+db*db);
+            if (dist < tolerance * 4.5) data[i+3] = 0;
+        }
+    }
+
+    function updateCutoutPreview() {
+        if (!rawCropData) return;
+        const tolerance = parseInt(document.getElementById('cutoutTolerance').value);
+        document.getElementById('cutoutToleranceVal').textContent = tolerance;
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = rawCropData.width; tempCanvas.height = rawCropData.height;
+        const ctx = tempCanvas.getContext('2d');
+        ctx.drawImage(rawCropData.canvas, 0, 0);
+        const imageData = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+        removeImageBackground(imageData, tolerance);
+        ctx.putImageData(imageData, 0, 0);
+        const previewCanvas = document.getElementById('cutoutPreviewCanvas');
+        const scale = parseFloat(document.getElementById('cutoutScale').value) / 100;
+        previewCanvas.width = rawCropData.width * scale;
+        previewCanvas.height = rawCropData.height * scale;
+        const pctx = previewCanvas.getContext('2d');
+        pctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+        pctx.drawImage(tempCanvas, 0, 0, previewCanvas.width, previewCanvas.height);
+    }
+
+    function updateCutoutScale() {
+        const v = parseInt(document.getElementById('cutoutScale').value);
+        document.getElementById('cutoutScaleVal').textContent = (v/100).toFixed(1);
+        updateCutoutPreview();
+    }
+
+    function updateCutoutPosition() {
+        document.getElementById('cutoutXVal').textContent = document.getElementById('cutoutOffsetX').value;
+        document.getElementById('cutoutYVal').textContent = document.getElementById('cutoutOffsetY').value;
+        if (croppedTextImage) applyCutoutToTag();
+    }
+
+    function applyCutoutToTag() {
+        if (!rawCropData) return;
+        const tolerance = parseInt(document.getElementById('cutoutTolerance').value);
+        const scale = parseInt(document.getElementById('cutoutScale').value) / 100;
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = rawCropData.width; tempCanvas.height = rawCropData.height;
+        const ctx = tempCanvas.getContext('2d');
+        ctx.drawImage(rawCropData.canvas, 0, 0);
+        const imageData = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+        removeImageBackground(imageData, tolerance);
+        ctx.putImageData(imageData, 0, 0);
+        const offsetX = parseInt(document.getElementById('cutoutOffsetX').value);
+        const offsetY = parseInt(document.getElementById('cutoutOffsetY').value);
+        croppedTextImage = { canvas: tempCanvas, scale, offsetX, offsetY };
+        const rawTitle = tagTitle.value || '';
+        [tagNormal, tagActive].forEach(tag => {
+            tag.querySelectorAll('.cropped-text-img').forEach(el => el.remove());
+            tag.innerHTML = '';
+            if (rawTitle) { const span = document.createElement('span'); span.innerHTML = formatTitle(rawTitle); span.style.display = 'none'; tag.appendChild(span); }
+            const img = document.createElement('canvas');
+            img.className = 'cropped-text-img';
+            img.width = tempCanvas.width * scale;
+            img.height = tempCanvas.height * scale;
+            img.style.position = 'absolute';
+            img.style.left = offsetX + 'px';
+            img.style.top = offsetY + 'px';
+            img.getContext('2d').drawImage(tempCanvas, 0, 0, img.width, img.height);
+            tag.appendChild(img);
+        });
+        showToast('📌 已合成到标签');
+    }
+
+    // === 下载 ===
+    function downloadTag(state) {
+        const tag = state === 'active' ? tagActive : tagNormal;
+        const tagRect = tag.getBoundingClientRect();
+        const wrapper = tag.parentElement;
+        const wrapperRect = wrapper.getBoundingClientRect();
+        const canvas = document.createElement('canvas');
+        canvas.width = 180 * 2;
+        canvas.height = 78 * 2;
+        const ctx = canvas.getContext('2d');
+        ctx.scale(2, 2);
+        const html = tag.outerHTML;
+        const svgData = `<svg xmlns="http://www.w3.org/2000/svg" width="180" height="78"><foreignObject width="180" height="78">${html.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}</foreignObject></svg>`;
+        const img = new Image();
+        img.onload = () => {
+            ctx.drawImage(img, 0, 0, 180, 78);
+            const link = document.createElement('a');
+            link.download = `channel-tag-${state}-${Date.now()}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            showToast('✅ 已下载 ' + (state==='active'?'选中':'常态') + ' 标签');
+        };
+        img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+    }
+
+    // === 初始化 ===
+    updatePreview();
+})();
+</script>
+</body>
+</html>.height = Math.round(size * refImageData.height / refImageData.width);
+        const ctx = canvas.onmousedown = (e) => { cropStart = {x: e.offsetX, y: e.offsetY}; cropEnd = null; };
+        canvas.onmousemove = (e) => {
+            if (!cropStart) return;
+            cropEnd = {x: e.offsetX, y: e.offsetY};
+            const ctx2 = canvas.getContext('2d');
+            ctx2.drawImage(refImageData, 0, 0, canvas.width, canvas.height);
+            ctx2.strokeStyle = '#22c55e';
+            ctx2.lineWidth = 2;
+            ctx2.setLineDash([6,3]);
+            const x = Math.min(cropStart.x, cropEnd.x);
+            const y = Math.min(cropStart.y, cropEnd.y);
+            const w = Math.abs(cropEnd.x - cropStart.x);
+            const h = Math.abs(cropEnd.y - cropStart.y);
+            ctx2.strokeRect(x, y, w, h);
+        };
+        canvas.onmouseup = (e) => { cropEnd = {x: e.offsetX, y: e.offsetY}; };
+    }
+
+    function confirmCrop() {
+        if (!cropStart || !cropEnd) { showToast('请先框选区域'); return; }
+        const canvas = document.getElementById('cropCanvas');
+        const x = Math.min(cropStart.x, cropEnd.x);
+        const y = Math.min(cropStart.y, cropEnd.y);
+        const w = Math.abs(cropEnd.x - cropStart.x);
+        const h = Math.abs(cropEnd.y - cropStart.y);
+        if (w < 5 || h < 5) { showToast('框选区域太小'); return; }
+        const croppedCanvas = document.createElement('canvas');
+        croppedCanvas.width = w; croppedCanvas.height = h;
+        croppedCanvas.getContext('2d').drawImage(canvas, x, y, w, h, 0, 0, w, h);
+        rawCropData = { canvas: croppedCanvas, width: w, height: h, scale: canvas._scale };
+        document.getElementById('cropArea').style.display = 'none';
+        document.getElementById('cutoutPreview').style.display = 'block';
+        updateCutoutPreview();
+    }
+
+    function cancelCrop() {
+        document.getElementById('cropArea').style.display = 'none';
+        cropStart = null; cropEnd = null;
+    }
+
+    function removeImageBackground(imageData, tolerance) {
+        const data = imageData.data;
+        const bgColor = {r: data[0], g: data[1], b: data[2]};
+        const corners = [
+            {r: data[0], g: data[1], b: data[2]},
+            {r: data[(imageData.width-1)*4], g: data[(imageData.width-1)*4+1], b: data[(imageData.width-1)*4+2]},
+            {r: data[(imageData.height-1)*imageData.width*4], g: data[(imageData.height-1)*imageData.width*4+1], b: data[(imageData.height-1)*imageData.width*4+2]},
+            {r: data[((imageData.height-1)*imageData.width+imageData.width-1)*4], g: data[((imageData.height-1)*imageData.width+imageData.width-1)*4+1], b: data[((imageData.height-1)*imageData.width+imageData.width-1)*4+2]}
+        ];
+        const avgBg = {r:0,g:0,b:0};
+        corners.forEach(c => { avgBg.r+=c.r; avgBg.g+=c.g; avgBg.b+=c.b; });
+        avgBg.r = Math.round(avgBg.r/4); avgBg.g = Math.round(avgBg.g/4); avgBg.b = Math.round(avgBg.b/4);
+        for (let i = 0; i < data.length; i += 4) {
+            const dr = data[i]-avgBg.r, dg = data[i+1]-avgBg.g, db = data[i+2]-avgBg.b;
+            const dist = Math.sqrt(dr*dr+dg*dg+db*db);
+            if (dist < tolerance * 4.5) data[i+3] = 0;
+        }
+    }
+
+    function updateCutoutPreview() {
+        if (!rawCropData) return;
+        const tolerance = parseInt(document.getElementById('cutoutTolerance').value);
+        document.getElementById('cutoutToleranceVal').textContent = tolerance;
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = rawCropData.width; tempCanvas.height = rawCropData.height;
+        const ctx = tempCanvas.getContext('2d');
+        ctx.drawImage(rawCropData.canvas, 0, 0);
+        const imageData = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+        removeImageBackground(imageData, tolerance);
+        ctx.putImageData(imageData, 0, 0);
+        const previewCanvas = document.getElementById('cutoutPreviewCanvas');
+        const scale = parseFloat(document.getElementById('cutoutScale').value) / 100;
+        previewCanvas.width = rawCropData.width * scale;
+        previewCanvas.height = rawCropData.height * scale;
+        const pctx = previewCanvas.getContext('2d');
+        pctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+        pctx.drawImage(tempCanvas, 0, 0, previewCanvas.width, previewCanvas.height);
+    }
+
+    function updateCutoutScale() {
+        const v = parseInt(document.getElementById('cutoutScale').value);
+        document.getElementById('cutoutScaleVal').textContent = (v/100).toFixed(1);
+        updateCutoutPreview();
+    }
+
+    function updateCutoutPosition() {
+        document.getElementById('cutoutXVal').textContent = document.getElementById('cutoutOffsetX').value;
+        document.getElementById('cutoutYVal').textContent = document.getElementById('cutoutOffsetY').value;
+        if (croppedTextImage) applyCutoutToTag();
+    }
+
+    function applyCutoutToTag() {
+        if (!rawCropData) return;
+        const tolerance = parseInt(document.getElementById('cutoutTolerance').value);
+        const scale = parseInt(document.getElementById('cutoutScale').value) / 100;
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = rawCropData.width; tempCanvas.height = rawCropData.height;
+        const ctx = tempCanvas.getContext('2d');
+        ctx.drawImage(rawCropData.canvas, 0, 0);
+        const imageData = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+        removeImageBackground(imageData, tolerance);
+        ctx.putImageData(imageData, 0, 0);
+        const offsetX = parseInt(document.getElementById('cutoutOffsetX').value);
+        const offsetY = parseInt(document.getElementById('cutoutOffsetY').value);
+        croppedTextImage = { canvas: tempCanvas, scale, offsetX, offsetY };
+        const rawTitle = tagTitle.value || '';
+        [tagNormal, tagActive].forEach(tag => {
+            tag.querySelectorAll('.cropped-text-img').forEach(el => el.remove());
+            tag.innerHTML = '';
+            if (rawTitle) { const span = document.createElement('span'); span.innerHTML = formatTitle(rawTitle); span.style.display = 'none'; tag.appendChild(span); }
+            const img = document.createElement('canvas');
+            img.className = 'cropped-text-img';
+            img.width = tempCanvas.width * scale;
+            img.height = tempCanvas.height * scale;
+            img.style.position = 'absolute';
+            img.style.left = offsetX + 'px';
+            img.style.top = offsetY + 'px';
+            img.getContext('2d').drawImage(tempCanvas, 0, 0, img.width, img.height);
+            tag.appendChild(img);
+        });
+        showToast('📌 已合成到标签');
+    }
+
+    // === 下载 ===
+    function downloadTag(state) {
+        const tag = state === 'active' ? tagActive : tagNormal;
+        const tagRect = tag.getBoundingClientRect();
+        const wrapper = tag.parentElement;
+        const wrapperRect = wrapper.getBoundingClientRect();
+        const canvas = document.createElement('canvas');
+        canvas.width = 180 * 2;
+        canvas.height = 78 * 2;
+        const ctx = canvas.getContext('2d');
+        ctx.scale(2, 2);
+        const html = tag.outerHTML;
+        const svgData = `<svg xmlns="http://www.w3.org/2000/svg" width="180" height="78"><foreignObject width="180" height="78">${html.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}</foreignObject></svg>`;
+        const img = new Image();
+        img.onload = () => {
+            ctx.drawImage(img, 0, 0, 180, 78);
+            const link = document.createElement('a');
+            link.download = `channel-tag-${state}-${Date.now()}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            showToast('✅ 已下载 ' + (state==='active'?'选中':'常态') + ' 标签');
+        };
+        img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+    }
+
+    // === 初始化 ===
+    updatePreview();
+})();
+</script>
+</body>
+</html>.getContext('2d');
+        ctx.drawImage(refImageData, 0, 0, canvas.onmousedown = (e) => { cropStart = {x: e.offsetX, y: e.offsetY}; cropEnd = null; };
+        canvas.onmousemove = (e) => {
+            if (!cropStart) return;
+            cropEnd = {x: e.offsetX, y: e.offsetY};
+            const ctx2 = canvas.getContext('2d');
+            ctx2.drawImage(refImageData, 0, 0, canvas.width, canvas.height);
+            ctx2.strokeStyle = '#22c55e';
+            ctx2.lineWidth = 2;
+            ctx2.setLineDash([6,3]);
+            const x = Math.min(cropStart.x, cropEnd.x);
+            const y = Math.min(cropStart.y, cropEnd.y);
+            const w = Math.abs(cropEnd.x - cropStart.x);
+            const h = Math.abs(cropEnd.y - cropStart.y);
+            ctx2.strokeRect(x, y, w, h);
+        };
+        canvas.onmouseup = (e) => { cropEnd = {x: e.offsetX, y: e.offsetY}; };
+    }
+
+    function confirmCrop() {
+        if (!cropStart || !cropEnd) { showToast('请先框选区域'); return; }
+        const canvas = document.getElementById('cropCanvas');
+        const x = Math.min(cropStart.x, cropEnd.x);
+        const y = Math.min(cropStart.y, cropEnd.y);
+        const w = Math.abs(cropEnd.x - cropStart.x);
+        const h = Math.abs(cropEnd.y - cropStart.y);
+        if (w < 5 || h < 5) { showToast('框选区域太小'); return; }
+        const croppedCanvas = document.createElement('canvas');
+        croppedCanvas.width = w; croppedCanvas.height = h;
+        croppedCanvas.getContext('2d').drawImage(canvas, x, y, w, h, 0, 0, w, h);
+        rawCropData = { canvas: croppedCanvas, width: w, height: h, scale: canvas._scale };
+        document.getElementById('cropArea').style.display = 'none';
+        document.getElementById('cutoutPreview').style.display = 'block';
+        updateCutoutPreview();
+    }
+
+    function cancelCrop() {
+        document.getElementById('cropArea').style.display = 'none';
+        cropStart = null; cropEnd = null;
+    }
+
+    function removeImageBackground(imageData, tolerance) {
+        const data = imageData.data;
+        const bgColor = {r: data[0], g: data[1], b: data[2]};
+        const corners = [
+            {r: data[0], g: data[1], b: data[2]},
+            {r: data[(imageData.width-1)*4], g: data[(imageData.width-1)*4+1], b: data[(imageData.width-1)*4+2]},
+            {r: data[(imageData.height-1)*imageData.width*4], g: data[(imageData.height-1)*imageData.width*4+1], b: data[(imageData.height-1)*imageData.width*4+2]},
+            {r: data[((imageData.height-1)*imageData.width+imageData.width-1)*4], g: data[((imageData.height-1)*imageData.width+imageData.width-1)*4+1], b: data[((imageData.height-1)*imageData.width+imageData.width-1)*4+2]}
+        ];
+        const avgBg = {r:0,g:0,b:0};
+        corners.forEach(c => { avgBg.r+=c.r; avgBg.g+=c.g; avgBg.b+=c.b; });
+        avgBg.r = Math.round(avgBg.r/4); avgBg.g = Math.round(avgBg.g/4); avgBg.b = Math.round(avgBg.b/4);
+        for (let i = 0; i < data.length; i += 4) {
+            const dr = data[i]-avgBg.r, dg = data[i+1]-avgBg.g, db = data[i+2]-avgBg.b;
+            const dist = Math.sqrt(dr*dr+dg*dg+db*db);
+            if (dist < tolerance * 4.5) data[i+3] = 0;
+        }
+    }
+
+    function updateCutoutPreview() {
+        if (!rawCropData) return;
+        const tolerance = parseInt(document.getElementById('cutoutTolerance').value);
+        document.getElementById('cutoutToleranceVal').textContent = tolerance;
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = rawCropData.width; tempCanvas.height = rawCropData.height;
+        const ctx = tempCanvas.getContext('2d');
+        ctx.drawImage(rawCropData.canvas, 0, 0);
+        const imageData = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+        removeImageBackground(imageData, tolerance);
+        ctx.putImageData(imageData, 0, 0);
+        const previewCanvas = document.getElementById('cutoutPreviewCanvas');
+        const scale = parseFloat(document.getElementById('cutoutScale').value) / 100;
+        previewCanvas.width = rawCropData.width * scale;
+        previewCanvas.height = rawCropData.height * scale;
+        const pctx = previewCanvas.getContext('2d');
+        pctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+        pctx.drawImage(tempCanvas, 0, 0, previewCanvas.width, previewCanvas.height);
+    }
+
+    function updateCutoutScale() {
+        const v = parseInt(document.getElementById('cutoutScale').value);
+        document.getElementById('cutoutScaleVal').textContent = (v/100).toFixed(1);
+        updateCutoutPreview();
+    }
+
+    function updateCutoutPosition() {
+        document.getElementById('cutoutXVal').textContent = document.getElementById('cutoutOffsetX').value;
+        document.getElementById('cutoutYVal').textContent = document.getElementById('cutoutOffsetY').value;
+        if (croppedTextImage) applyCutoutToTag();
+    }
+
+    function applyCutoutToTag() {
+        if (!rawCropData) return;
+        const tolerance = parseInt(document.getElementById('cutoutTolerance').value);
+        const scale = parseInt(document.getElementById('cutoutScale').value) / 100;
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = rawCropData.width; tempCanvas.height = rawCropData.height;
+        const ctx = tempCanvas.getContext('2d');
+        ctx.drawImage(rawCropData.canvas, 0, 0);
+        const imageData = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+        removeImageBackground(imageData, tolerance);
+        ctx.putImageData(imageData, 0, 0);
+        const offsetX = parseInt(document.getElementById('cutoutOffsetX').value);
+        const offsetY = parseInt(document.getElementById('cutoutOffsetY').value);
+        croppedTextImage = { canvas: tempCanvas, scale, offsetX, offsetY };
+        const rawTitle = tagTitle.value || '';
+        [tagNormal, tagActive].forEach(tag => {
+            tag.querySelectorAll('.cropped-text-img').forEach(el => el.remove());
+            tag.innerHTML = '';
+            if (rawTitle) { const span = document.createElement('span'); span.innerHTML = formatTitle(rawTitle); span.style.display = 'none'; tag.appendChild(span); }
+            const img = document.createElement('canvas');
+            img.className = 'cropped-text-img';
+            img.width = tempCanvas.width * scale;
+            img.height = tempCanvas.height * scale;
+            img.style.position = 'absolute';
+            img.style.left = offsetX + 'px';
+            img.style.top = offsetY + 'px';
+            img.getContext('2d').drawImage(tempCanvas, 0, 0, img.width, img.height);
+            tag.appendChild(img);
+        });
+        showToast('📌 已合成到标签');
+    }
+
+    // === 下载 ===
+    function downloadTag(state) {
+        const tag = state === 'active' ? tagActive : tagNormal;
+        const tagRect = tag.getBoundingClientRect();
+        const wrapper = tag.parentElement;
+        const wrapperRect = wrapper.getBoundingClientRect();
+        const canvas = document.createElement('canvas');
+        canvas.width = 180 * 2;
+        canvas.height = 78 * 2;
+        const ctx = canvas.getContext('2d');
+        ctx.scale(2, 2);
+        const html = tag.outerHTML;
+        const svgData = `<svg xmlns="http://www.w3.org/2000/svg" width="180" height="78"><foreignObject width="180" height="78">${html.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}</foreignObject></svg>`;
+        const img = new Image();
+        img.onload = () => {
+            ctx.drawImage(img, 0, 0, 180, 78);
+            const link = document.createElement('a');
+            link.download = `channel-tag-${state}-${Date.now()}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            showToast('✅ 已下载 ' + (state==='active'?'选中':'常态') + ' 标签');
+        };
+        img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+    }
+
+    // === 初始化 ===
+    updatePreview();
+})();
+</script>
+</body>
+</html>.width, canvas.onmousedown = (e) => { cropStart = {x: e.offsetX, y: e.offsetY}; cropEnd = null; };
+        canvas.onmousemove = (e) => {
+            if (!cropStart) return;
+            cropEnd = {x: e.offsetX, y: e.offsetY};
+            const ctx2 = canvas.getContext('2d');
+            ctx2.drawImage(refImageData, 0, 0, canvas.width, canvas.height);
+            ctx2.strokeStyle = '#22c55e';
+            ctx2.lineWidth = 2;
+            ctx2.setLineDash([6,3]);
+            const x = Math.min(cropStart.x, cropEnd.x);
+            const y = Math.min(cropStart.y, cropEnd.y);
+            const w = Math.abs(cropEnd.x - cropStart.x);
+            const h = Math.abs(cropEnd.y - cropStart.y);
+            ctx2.strokeRect(x, y, w, h);
+        };
+        canvas.onmouseup = (e) => { cropEnd = {x: e.offsetX, y: e.offsetY}; };
+    }
+
+    function confirmCrop() {
+        if (!cropStart || !cropEnd) { showToast('请先框选区域'); return; }
+        const canvas = document.getElementById('cropCanvas');
+        const x = Math.min(cropStart.x, cropEnd.x);
+        const y = Math.min(cropStart.y, cropEnd.y);
+        const w = Math.abs(cropEnd.x - cropStart.x);
+        const h = Math.abs(cropEnd.y - cropStart.y);
+        if (w < 5 || h < 5) { showToast('框选区域太小'); return; }
+        const croppedCanvas = document.createElement('canvas');
+        croppedCanvas.width = w; croppedCanvas.height = h;
+        croppedCanvas.getContext('2d').drawImage(canvas, x, y, w, h, 0, 0, w, h);
+        rawCropData = { canvas: croppedCanvas, width: w, height: h, scale: canvas._scale };
+        document.getElementById('cropArea').style.display = 'none';
+        document.getElementById('cutoutPreview').style.display = 'block';
+        updateCutoutPreview();
+    }
+
+    function cancelCrop() {
+        document.getElementById('cropArea').style.display = 'none';
+        cropStart = null; cropEnd = null;
+    }
+
+    function removeImageBackground(imageData, tolerance) {
+        const data = imageData.data;
+        const bgColor = {r: data[0], g: data[1], b: data[2]};
+        const corners = [
+            {r: data[0], g: data[1], b: data[2]},
+            {r: data[(imageData.width-1)*4], g: data[(imageData.width-1)*4+1], b: data[(imageData.width-1)*4+2]},
+            {r: data[(imageData.height-1)*imageData.width*4], g: data[(imageData.height-1)*imageData.width*4+1], b: data[(imageData.height-1)*imageData.width*4+2]},
+            {r: data[((imageData.height-1)*imageData.width+imageData.width-1)*4], g: data[((imageData.height-1)*imageData.width+imageData.width-1)*4+1], b: data[((imageData.height-1)*imageData.width+imageData.width-1)*4+2]}
+        ];
+        const avgBg = {r:0,g:0,b:0};
+        corners.forEach(c => { avgBg.r+=c.r; avgBg.g+=c.g; avgBg.b+=c.b; });
+        avgBg.r = Math.round(avgBg.r/4); avgBg.g = Math.round(avgBg.g/4); avgBg.b = Math.round(avgBg.b/4);
+        for (let i = 0; i < data.length; i += 4) {
+            const dr = data[i]-avgBg.r, dg = data[i+1]-avgBg.g, db = data[i+2]-avgBg.b;
+            const dist = Math.sqrt(dr*dr+dg*dg+db*db);
+            if (dist < tolerance * 4.5) data[i+3] = 0;
+        }
+    }
+
+    function updateCutoutPreview() {
+        if (!rawCropData) return;
+        const tolerance = parseInt(document.getElementById('cutoutTolerance').value);
+        document.getElementById('cutoutToleranceVal').textContent = tolerance;
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = rawCropData.width; tempCanvas.height = rawCropData.height;
+        const ctx = tempCanvas.getContext('2d');
+        ctx.drawImage(rawCropData.canvas, 0, 0);
+        const imageData = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+        removeImageBackground(imageData, tolerance);
+        ctx.putImageData(imageData, 0, 0);
+        const previewCanvas = document.getElementById('cutoutPreviewCanvas');
+        const scale = parseFloat(document.getElementById('cutoutScale').value) / 100;
+        previewCanvas.width = rawCropData.width * scale;
+        previewCanvas.height = rawCropData.height * scale;
+        const pctx = previewCanvas.getContext('2d');
+        pctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+        pctx.drawImage(tempCanvas, 0, 0, previewCanvas.width, previewCanvas.height);
+    }
+
+    function updateCutoutScale() {
+        const v = parseInt(document.getElementById('cutoutScale').value);
+        document.getElementById('cutoutScaleVal').textContent = (v/100).toFixed(1);
+        updateCutoutPreview();
+    }
+
+    function updateCutoutPosition() {
+        document.getElementById('cutoutXVal').textContent = document.getElementById('cutoutOffsetX').value;
+        document.getElementById('cutoutYVal').textContent = document.getElementById('cutoutOffsetY').value;
+        if (croppedTextImage) applyCutoutToTag();
+    }
+
+    function applyCutoutToTag() {
+        if (!rawCropData) return;
+        const tolerance = parseInt(document.getElementById('cutoutTolerance').value);
+        const scale = parseInt(document.getElementById('cutoutScale').value) / 100;
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = rawCropData.width; tempCanvas.height = rawCropData.height;
+        const ctx = tempCanvas.getContext('2d');
+        ctx.drawImage(rawCropData.canvas, 0, 0);
+        const imageData = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+        removeImageBackground(imageData, tolerance);
+        ctx.putImageData(imageData, 0, 0);
+        const offsetX = parseInt(document.getElementById('cutoutOffsetX').value);
+        const offsetY = parseInt(document.getElementById('cutoutOffsetY').value);
+        croppedTextImage = { canvas: tempCanvas, scale, offsetX, offsetY };
+        const rawTitle = tagTitle.value || '';
+        [tagNormal, tagActive].forEach(tag => {
+            tag.querySelectorAll('.cropped-text-img').forEach(el => el.remove());
+            tag.innerHTML = '';
+            if (rawTitle) { const span = document.createElement('span'); span.innerHTML = formatTitle(rawTitle); span.style.display = 'none'; tag.appendChild(span); }
+            const img = document.createElement('canvas');
+            img.className = 'cropped-text-img';
+            img.width = tempCanvas.width * scale;
+            img.height = tempCanvas.height * scale;
+            img.style.position = 'absolute';
+            img.style.left = offsetX + 'px';
+            img.style.top = offsetY + 'px';
+            img.getContext('2d').drawImage(tempCanvas, 0, 0, img.width, img.height);
+            tag.appendChild(img);
+        });
+        showToast('📌 已合成到标签');
+    }
+
+    // === 下载 ===
+    function downloadTag(state) {
+        const tag = state === 'active' ? tagActive : tagNormal;
+        const tagRect = tag.getBoundingClientRect();
+        const wrapper = tag.parentElement;
+        const wrapperRect = wrapper.getBoundingClientRect();
+        const canvas = document.createElement('canvas');
+        canvas.width = 180 * 2;
+        canvas.height = 78 * 2;
+        const ctx = canvas.getContext('2d');
+        ctx.scale(2, 2);
+        const html = tag.outerHTML;
+        const svgData = `<svg xmlns="http://www.w3.org/2000/svg" width="180" height="78"><foreignObject width="180" height="78">${html.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}</foreignObject></svg>`;
+        const img = new Image();
+        img.onload = () => {
+            ctx.drawImage(img, 0, 0, 180, 78);
+            const link = document.createElement('a');
+            link.download = `channel-tag-${state}-${Date.now()}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            showToast('✅ 已下载 ' + (state==='active'?'选中':'常态') + ' 标签');
+        };
+        img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+    }
+
+    // === 初始化 ===
+    updatePreview();
+})();
+</script>
+</body>
+</html>.height);
+        const imageData = ctx.getImageData(0, 0, canvas.onmousedown = (e) => { cropStart = {x: e.offsetX, y: e.offsetY}; cropEnd = null; };
+        canvas.onmousemove = (e) => {
+            if (!cropStart) return;
+            cropEnd = {x: e.offsetX, y: e.offsetY};
+            const ctx2 = canvas.getContext('2d');
+            ctx2.drawImage(refImageData, 0, 0, canvas.width, canvas.height);
+            ctx2.strokeStyle = '#22c55e';
+            ctx2.lineWidth = 2;
+            ctx2.setLineDash([6,3]);
+            const x = Math.min(cropStart.x, cropEnd.x);
+            const y = Math.min(cropStart.y, cropEnd.y);
+            const w = Math.abs(cropEnd.x - cropStart.x);
+            const h = Math.abs(cropEnd.y - cropStart.y);
+            ctx2.strokeRect(x, y, w, h);
+        };
+        canvas.onmouseup = (e) => { cropEnd = {x: e.offsetX, y: e.offsetY}; };
+    }
+
+    function confirmCrop() {
+        if (!cropStart || !cropEnd) { showToast('请先框选区域'); return; }
+        const canvas = document.getElementById('cropCanvas');
+        const x = Math.min(cropStart.x, cropEnd.x);
+        const y = Math.min(cropStart.y, cropEnd.y);
+        const w = Math.abs(cropEnd.x - cropStart.x);
+        const h = Math.abs(cropEnd.y - cropStart.y);
+        if (w < 5 || h < 5) { showToast('框选区域太小'); return; }
+        const croppedCanvas = document.createElement('canvas');
+        croppedCanvas.width = w; croppedCanvas.height = h;
+        croppedCanvas.getContext('2d').drawImage(canvas, x, y, w, h, 0, 0, w, h);
+        rawCropData = { canvas: croppedCanvas, width: w, height: h, scale: canvas._scale };
+        document.getElementById('cropArea').style.display = 'none';
+        document.getElementById('cutoutPreview').style.display = 'block';
+        updateCutoutPreview();
+    }
+
+    function cancelCrop() {
+        document.getElementById('cropArea').style.display = 'none';
+        cropStart = null; cropEnd = null;
+    }
+
+    function removeImageBackground(imageData, tolerance) {
+        const data = imageData.data;
+        const bgColor = {r: data[0], g: data[1], b: data[2]};
+        const corners = [
+            {r: data[0], g: data[1], b: data[2]},
+            {r: data[(imageData.width-1)*4], g: data[(imageData.width-1)*4+1], b: data[(imageData.width-1)*4+2]},
+            {r: data[(imageData.height-1)*imageData.width*4], g: data[(imageData.height-1)*imageData.width*4+1], b: data[(imageData.height-1)*imageData.width*4+2]},
+            {r: data[((imageData.height-1)*imageData.width+imageData.width-1)*4], g: data[((imageData.height-1)*imageData.width+imageData.width-1)*4+1], b: data[((imageData.height-1)*imageData.width+imageData.width-1)*4+2]}
+        ];
+        const avgBg = {r:0,g:0,b:0};
+        corners.forEach(c => { avgBg.r+=c.r; avgBg.g+=c.g; avgBg.b+=c.b; });
+        avgBg.r = Math.round(avgBg.r/4); avgBg.g = Math.round(avgBg.g/4); avgBg.b = Math.round(avgBg.b/4);
+        for (let i = 0; i < data.length; i += 4) {
+            const dr = data[i]-avgBg.r, dg = data[i+1]-avgBg.g, db = data[i+2]-avgBg.b;
+            const dist = Math.sqrt(dr*dr+dg*dg+db*db);
+            if (dist < tolerance * 4.5) data[i+3] = 0;
+        }
+    }
+
+    function updateCutoutPreview() {
+        if (!rawCropData) return;
+        const tolerance = parseInt(document.getElementById('cutoutTolerance').value);
+        document.getElementById('cutoutToleranceVal').textContent = tolerance;
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = rawCropData.width; tempCanvas.height = rawCropData.height;
+        const ctx = tempCanvas.getContext('2d');
+        ctx.drawImage(rawCropData.canvas, 0, 0);
+        const imageData = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+        removeImageBackground(imageData, tolerance);
+        ctx.putImageData(imageData, 0, 0);
+        const previewCanvas = document.getElementById('cutoutPreviewCanvas');
+        const scale = parseFloat(document.getElementById('cutoutScale').value) / 100;
+        previewCanvas.width = rawCropData.width * scale;
+        previewCanvas.height = rawCropData.height * scale;
+        const pctx = previewCanvas.getContext('2d');
+        pctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+        pctx.drawImage(tempCanvas, 0, 0, previewCanvas.width, previewCanvas.height);
+    }
+
+    function updateCutoutScale() {
+        const v = parseInt(document.getElementById('cutoutScale').value);
+        document.getElementById('cutoutScaleVal').textContent = (v/100).toFixed(1);
+        updateCutoutPreview();
+    }
+
+    function updateCutoutPosition() {
+        document.getElementById('cutoutXVal').textContent = document.getElementById('cutoutOffsetX').value;
+        document.getElementById('cutoutYVal').textContent = document.getElementById('cutoutOffsetY').value;
+        if (croppedTextImage) applyCutoutToTag();
+    }
+
+    function applyCutoutToTag() {
+        if (!rawCropData) return;
+        const tolerance = parseInt(document.getElementById('cutoutTolerance').value);
+        const scale = parseInt(document.getElementById('cutoutScale').value) / 100;
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = rawCropData.width; tempCanvas.height = rawCropData.height;
+        const ctx = tempCanvas.getContext('2d');
+        ctx.drawImage(rawCropData.canvas, 0, 0);
+        const imageData = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+        removeImageBackground(imageData, tolerance);
+        ctx.putImageData(imageData, 0, 0);
+        const offsetX = parseInt(document.getElementById('cutoutOffsetX').value);
+        const offsetY = parseInt(document.getElementById('cutoutOffsetY').value);
+        croppedTextImage = { canvas: tempCanvas, scale, offsetX, offsetY };
+        const rawTitle = tagTitle.value || '';
+        [tagNormal, tagActive].forEach(tag => {
+            tag.querySelectorAll('.cropped-text-img').forEach(el => el.remove());
+            tag.innerHTML = '';
+            if (rawTitle) { const span = document.createElement('span'); span.innerHTML = formatTitle(rawTitle); span.style.display = 'none'; tag.appendChild(span); }
+            const img = document.createElement('canvas');
+            img.className = 'cropped-text-img';
+            img.width = tempCanvas.width * scale;
+            img.height = tempCanvas.height * scale;
+            img.style.position = 'absolute';
+            img.style.left = offsetX + 'px';
+            img.style.top = offsetY + 'px';
+            img.getContext('2d').drawImage(tempCanvas, 0, 0, img.width, img.height);
+            tag.appendChild(img);
+        });
+        showToast('📌 已合成到标签');
+    }
+
+    // === 下载 ===
+    function downloadTag(state) {
+        const tag = state === 'active' ? tagActive : tagNormal;
+        const tagRect = tag.getBoundingClientRect();
+        const wrapper = tag.parentElement;
+        const wrapperRect = wrapper.getBoundingClientRect();
+        const canvas = document.createElement('canvas');
+        canvas.width = 180 * 2;
+        canvas.height = 78 * 2;
+        const ctx = canvas.getContext('2d');
+        ctx.scale(2, 2);
+        const html = tag.outerHTML;
+        const svgData = `<svg xmlns="http://www.w3.org/2000/svg" width="180" height="78"><foreignObject width="180" height="78">${html.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}</foreignObject></svg>`;
+        const img = new Image();
+        img.onload = () => {
+            ctx.drawImage(img, 0, 0, 180, 78);
+            const link = document.createElement('a');
+            link.download = `channel-tag-${state}-${Date.now()}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            showToast('✅ 已下载 ' + (state==='active'?'选中':'常态') + ' 标签');
+        };
+        img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+    }
+
+    // === 初始化 ===
+    updatePreview();
+})();
+</script>
+</body>
+</html>.width, canvas.onmousedown = (e) => { cropStart = {x: e.offsetX, y: e.offsetY}; cropEnd = null; };
+        canvas.onmousemove = (e) => {
+            if (!cropStart) return;
+            cropEnd = {x: e.offsetX, y: e.offsetY};
+            const ctx2 = canvas.getContext('2d');
+            ctx2.drawImage(refImageData, 0, 0, canvas.width, canvas.height);
+            ctx2.strokeStyle = '#22c55e';
+            ctx2.lineWidth = 2;
+            ctx2.setLineDash([6,3]);
+            const x = Math.min(cropStart.x, cropEnd.x);
+            const y = Math.min(cropStart.y, cropEnd.y);
+            const w = Math.abs(cropEnd.x - cropStart.x);
+            const h = Math.abs(cropEnd.y - cropStart.y);
+            ctx2.strokeRect(x, y, w, h);
+        };
+        canvas.onmouseup = (e) => { cropEnd = {x: e.offsetX, y: e.offsetY}; };
+    }
+
+    function confirmCrop() {
+        if (!cropStart || !cropEnd) { showToast('请先框选区域'); return; }
+        const canvas = document.getElementById('cropCanvas');
+        const x = Math.min(cropStart.x, cropEnd.x);
+        const y = Math.min(cropStart.y, cropEnd.y);
+        const w = Math.abs(cropEnd.x - cropStart.x);
+        const h = Math.abs(cropEnd.y - cropStart.y);
+        if (w < 5 || h < 5) { showToast('框选区域太小'); return; }
+        const croppedCanvas = document.createElement('canvas');
+        croppedCanvas.width = w; croppedCanvas.height = h;
+        croppedCanvas.getContext('2d').drawImage(canvas, x, y, w, h, 0, 0, w, h);
+        rawCropData = { canvas: croppedCanvas, width: w, height: h, scale: canvas._scale };
+        document.getElementById('cropArea').style.display = 'none';
+        document.getElementById('cutoutPreview').style.display = 'block';
+        updateCutoutPreview();
+    }
+
+    function cancelCrop() {
+        document.getElementById('cropArea').style.display = 'none';
+        cropStart = null; cropEnd = null;
+    }
+
+    function removeImageBackground(imageData, tolerance) {
+        const data = imageData.data;
+        const bgColor = {r: data[0], g: data[1], b: data[2]};
+        const corners = [
+            {r: data[0], g: data[1], b: data[2]},
+            {r: data[(imageData.width-1)*4], g: data[(imageData.width-1)*4+1], b: data[(imageData.width-1)*4+2]},
+            {r: data[(imageData.height-1)*imageData.width*4], g: data[(imageData.height-1)*imageData.width*4+1], b: data[(imageData.height-1)*imageData.width*4+2]},
+            {r: data[((imageData.height-1)*imageData.width+imageData.width-1)*4], g: data[((imageData.height-1)*imageData.width+imageData.width-1)*4+1], b: data[((imageData.height-1)*imageData.width+imageData.width-1)*4+2]}
+        ];
+        const avgBg = {r:0,g:0,b:0};
+        corners.forEach(c => { avgBg.r+=c.r; avgBg.g+=c.g; avgBg.b+=c.b; });
+        avgBg.r = Math.round(avgBg.r/4); avgBg.g = Math.round(avgBg.g/4); avgBg.b = Math.round(avgBg.b/4);
+        for (let i = 0; i < data.length; i += 4) {
+            const dr = data[i]-avgBg.r, dg = data[i+1]-avgBg.g, db = data[i+2]-avgBg.b;
+            const dist = Math.sqrt(dr*dr+dg*dg+db*db);
+            if (dist < tolerance * 4.5) data[i+3] = 0;
+        }
+    }
+
+    function updateCutoutPreview() {
+        if (!rawCropData) return;
+        const tolerance = parseInt(document.getElementById('cutoutTolerance').value);
+        document.getElementById('cutoutToleranceVal').textContent = tolerance;
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = rawCropData.width; tempCanvas.height = rawCropData.height;
+        const ctx = tempCanvas.getContext('2d');
+        ctx.drawImage(rawCropData.canvas, 0, 0);
+        const imageData = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+        removeImageBackground(imageData, tolerance);
+        ctx.putImageData(imageData, 0, 0);
+        const previewCanvas = document.getElementById('cutoutPreviewCanvas');
+        const scale = parseFloat(document.getElementById('cutoutScale').value) / 100;
+        previewCanvas.width = rawCropData.width * scale;
+        previewCanvas.height = rawCropData.height * scale;
+        const pctx = previewCanvas.getContext('2d');
+        pctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+        pctx.drawImage(tempCanvas, 0, 0, previewCanvas.width, previewCanvas.height);
+    }
+
+    function updateCutoutScale() {
+        const v = parseInt(document.getElementById('cutoutScale').value);
+        document.getElementById('cutoutScaleVal').textContent = (v/100).toFixed(1);
+        updateCutoutPreview();
+    }
+
+    function updateCutoutPosition() {
+        document.getElementById('cutoutXVal').textContent = document.getElementById('cutoutOffsetX').value;
+        document.getElementById('cutoutYVal').textContent = document.getElementById('cutoutOffsetY').value;
+        if (croppedTextImage) applyCutoutToTag();
+    }
+
+    function applyCutoutToTag() {
+        if (!rawCropData) return;
+        const tolerance = parseInt(document.getElementById('cutoutTolerance').value);
+        const scale = parseInt(document.getElementById('cutoutScale').value) / 100;
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = rawCropData.width; tempCanvas.height = rawCropData.height;
+        const ctx = tempCanvas.getContext('2d');
+        ctx.drawImage(rawCropData.canvas, 0, 0);
+        const imageData = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+        removeImageBackground(imageData, tolerance);
+        ctx.putImageData(imageData, 0, 0);
+        const offsetX = parseInt(document.getElementById('cutoutOffsetX').value);
+        const offsetY = parseInt(document.getElementById('cutoutOffsetY').value);
+        croppedTextImage = { canvas: tempCanvas, scale, offsetX, offsetY };
+        const rawTitle = tagTitle.value || '';
+        [tagNormal, tagActive].forEach(tag => {
+            tag.querySelectorAll('.cropped-text-img').forEach(el => el.remove());
+            tag.innerHTML = '';
+            if (rawTitle) { const span = document.createElement('span'); span.innerHTML = formatTitle(rawTitle); span.style.display = 'none'; tag.appendChild(span); }
+            const img = document.createElement('canvas');
+            img.className = 'cropped-text-img';
+            img.width = tempCanvas.width * scale;
+            img.height = tempCanvas.height * scale;
+            img.style.position = 'absolute';
+            img.style.left = offsetX + 'px';
+            img.style.top = offsetY + 'px';
+            img.getContext('2d').drawImage(tempCanvas, 0, 0, img.width, img.height);
+            tag.appendChild(img);
+        });
+        showToast('📌 已合成到标签');
+    }
+
+    // === 下载 ===
+    function downloadTag(state) {
+        const tag = state === 'active' ? tagActive : tagNormal;
+        const tagRect = tag.getBoundingClientRect();
+        const wrapper = tag.parentElement;
+        const wrapperRect = wrapper.getBoundingClientRect();
+        const canvas = document.createElement('canvas');
+        canvas.width = 180 * 2;
+        canvas.height = 78 * 2;
+        const ctx = canvas.getContext('2d');
+        ctx.scale(2, 2);
+        const html = tag.outerHTML;
+        const svgData = `<svg xmlns="http://www.w3.org/2000/svg" width="180" height="78"><foreignObject width="180" height="78">${html.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}</foreignObject></svg>`;
+        const img = new Image();
+        img.onload = () => {
+            ctx.drawImage(img, 0, 0, 180, 78);
+            const link = document.createElement('a');
+            link.download = `channel-tag-${state}-${Date.now()}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            showToast('✅ 已下载 ' + (state==='active'?'选中':'常态') + ' 标签');
+        };
+        img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+    }
+
+    // === 初始化 ===
+    updatePreview();
+})();
+</script>
+</body>
+</html>.height);
+        const pixels = imageData.data;
+        const samples = [];
+        for (let i = 0; i < pixels.length; i += 16) {
+            const r = pixels[i], g = pixels[i+1], b = pixels[i+2], a = pixels[i+3];
+            if (a < 128) continue;
+            samples.push([r,g,b]);
+        }
+        if (samples.length === 0) { showToast('未检测到有效颜色'); btn.disabled = false; btn.textContent = '🎨 提取配色'; return; }
+        const buckets = {};
+        for (const [r,g,b] of samples) {
+            const key = `${Math.round(r/32)},${Math.round(g/32)},${Math.round(b/32)}`;
+            if (!buckets[key]) buckets[key] = { count:0, r:0, g:0, b:0 };
+            buckets[key].count++; buckets[key].r += r; buckets[key].g += g; buckets[key].b += b;
+        }
+        const palette = Object.values(buckets).filter(b => b.count > 2).map(c => ({
+            r: Math.round(c.r/c.count), g: Math.round(c.g/c.count), b: Math.round(c.b/c.count), ratio: c.count/samples.length
+        })).sort((a,b) => b.ratio - a.ratio).slice(0, 6);
+        const toHex = (c) => '#' + [c.r,c.g,c.b].map(v => v.toString(16).padStart(2,'0')).join('');
+        const byLightness = [...palette].sort((a,b) => (a.r*0.299+a.g*0.587+a.b*0.114) - (b.r*0.299+b.g*0.587+b.b*0.114));
+        const bySaturation = [...palette].sort((a,b) => {
+            const sa = Math.max(a.r,a.g,a.b)-Math.min(a.r,a.g,a.b);
+            const sb = Math.max(b.r,b.g,b.b)-Math.min(b.r,b.g,b.b);
+            return sb - sa;
+        });
+        const midLight = byLightness[Math.floor(byLightness.length/2)];
+        const nTextLum = midLight.r*0.299+midLight.g*0.587+midLight.b*0.114;
+        const finalNText = nTextLum < 128 ? '#c8c8dc' : toHex(midLight);
+        activeText.value = '#ffffff';
+        normalText.value = finalNText;
+        document.getElementById('activeTextHex').textContent = '#ffffff';
+        document.getElementById('normalTextHex').textContent = finalNText;
+        updatePreview();
+        const pd = document.getElementById('extractedPalette');
+        let html = '<span style="font-size:11px;color:var(--text-secondary);margin-right:4px;">调色板</span>';
+        palette.forEach(c => { html += `<div style="width:22px;height:22px;border-radius:4px;background:${toHex(c)};border:1px solid rgba(255,255,255,0.2);" title="${toHex(c)}"></div>`; });
+        html += '<span style="font-size:10px;color:#22c55e;margin-left:6px;">✓ 已应用</span>';
+        pd.innerHTML = html;
+        btn.disabled = false; btn.textContent = '🎨 提取配色';
+        showToast('配色已提取（仅文字色，背景色独立）');
+    }
+
+    // === 切图 ===
+    function startCrop() {
+        if (!refImageData) return;
+        document.getElementById('cutoutPreview').style.display = 'none';
+        const ca = document.getElementById('cropArea');
+        ca.style.display = 'block';
+        const canvas.onmousedown = (e) => { cropStart = {x: e.offsetX, y: e.offsetY}; cropEnd = null; };
+        canvas.onmousemove = (e) => {
+            if (!cropStart) return;
+            cropEnd = {x: e.offsetX, y: e.offsetY};
+            const ctx2 = canvas.getContext('2d');
+            ctx2.drawImage(refImageData, 0, 0, canvas.width, canvas.height);
+            ctx2.strokeStyle = '#22c55e';
+            ctx2.lineWidth = 2;
+            ctx2.setLineDash([6,3]);
+            const x = Math.min(cropStart.x, cropEnd.x);
+            const y = Math.min(cropStart.y, cropEnd.y);
+            const w = Math.abs(cropEnd.x - cropStart.x);
+            const h = Math.abs(cropEnd.y - cropStart.y);
+            ctx2.strokeRect(x, y, w, h);
+        };
+        canvas.onmouseup = (e) => { cropEnd = {x: e.offsetX, y: e.offsetY}; };
+    }
+
+    function confirmCrop() {
+        if (!cropStart || !cropEnd) { showToast('请先框选区域'); return; }
+        const canvas = document.getElementById('cropCanvas');
+        const x = Math.min(cropStart.x, cropEnd.x);
+        const y = Math.min(cropStart.y, cropEnd.y);
+        const w = Math.abs(cropEnd.x - cropStart.x);
+        const h = Math.abs(cropEnd.y - cropStart.y);
+        if (w < 5 || h < 5) { showToast('框选区域太小'); return; }
+        const croppedCanvas = document.createElement('canvas');
+        croppedCanvas.width = w; croppedCanvas.height = h;
+        croppedCanvas.getContext('2d').drawImage(canvas, x, y, w, h, 0, 0, w, h);
+        rawCropData = { canvas: croppedCanvas, width: w, height: h, scale: canvas._scale };
+        document.getElementById('cropArea').style.display = 'none';
+        document.getElementById('cutoutPreview').style.display = 'block';
+        updateCutoutPreview();
+    }
+
+    function cancelCrop() {
+        document.getElementById('cropArea').style.display = 'none';
+        cropStart = null; cropEnd = null;
+    }
+
+    function removeImageBackground(imageData, tolerance) {
+        const data = imageData.data;
+        const bgColor = {r: data[0], g: data[1], b: data[2]};
+        const corners = [
+            {r: data[0], g: data[1], b: data[2]},
+            {r: data[(imageData.width-1)*4], g: data[(imageData.width-1)*4+1], b: data[(imageData.width-1)*4+2]},
+            {r: data[(imageData.height-1)*imageData.width*4], g: data[(imageData.height-1)*imageData.width*4+1], b: data[(imageData.height-1)*imageData.width*4+2]},
+            {r: data[((imageData.height-1)*imageData.width+imageData.width-1)*4], g: data[((imageData.height-1)*imageData.width+imageData.width-1)*4+1], b: data[((imageData.height-1)*imageData.width+imageData.width-1)*4+2]}
+        ];
+        const avgBg = {r:0,g:0,b:0};
+        corners.forEach(c => { avgBg.r+=c.r; avgBg.g+=c.g; avgBg.b+=c.b; });
+        avgBg.r = Math.round(avgBg.r/4); avgBg.g = Math.round(avgBg.g/4); avgBg.b = Math.round(avgBg.b/4);
+        for (let i = 0; i < data.length; i += 4) {
+            const dr = data[i]-avgBg.r, dg = data[i+1]-avgBg.g, db = data[i+2]-avgBg.b;
+            const dist = Math.sqrt(dr*dr+dg*dg+db*db);
+            if (dist < tolerance * 4.5) data[i+3] = 0;
+        }
+    }
+
+    function updateCutoutPreview() {
+        if (!rawCropData) return;
+        const tolerance = parseInt(document.getElementById('cutoutTolerance').value);
+        document.getElementById('cutoutToleranceVal').textContent = tolerance;
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = rawCropData.width; tempCanvas.height = rawCropData.height;
+        const ctx = tempCanvas.getContext('2d');
+        ctx.drawImage(rawCropData.canvas, 0, 0);
+        const imageData = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+        removeImageBackground(imageData, tolerance);
+        ctx.putImageData(imageData, 0, 0);
+        const previewCanvas = document.getElementById('cutoutPreviewCanvas');
+        const scale = parseFloat(document.getElementById('cutoutScale').value) / 100;
+        previewCanvas.width = rawCropData.width * scale;
+        previewCanvas.height = rawCropData.height * scale;
+        const pctx = previewCanvas.getContext('2d');
+        pctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+        pctx.drawImage(tempCanvas, 0, 0, previewCanvas.width, previewCanvas.height);
+    }
+
+    function updateCutoutScale() {
+        const v = parseInt(document.getElementById('cutoutScale').value);
+        document.getElementById('cutoutScaleVal').textContent = (v/100).toFixed(1);
+        updateCutoutPreview();
+    }
+
+    function updateCutoutPosition() {
+        document.getElementById('cutoutXVal').textContent = document.getElementById('cutoutOffsetX').value;
+        document.getElementById('cutoutYVal').textContent = document.getElementById('cutoutOffsetY').value;
+        if (croppedTextImage) applyCutoutToTag();
+    }
+
+    function applyCutoutToTag() {
+        if (!rawCropData) return;
+        const tolerance = parseInt(document.getElementById('cutoutTolerance').value);
+        const scale = parseInt(document.getElementById('cutoutScale').value) / 100;
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = rawCropData.width; tempCanvas.height = rawCropData.height;
+        const ctx = tempCanvas.getContext('2d');
+        ctx.drawImage(rawCropData.canvas, 0, 0);
+        const imageData = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+        removeImageBackground(imageData, tolerance);
+        ctx.putImageData(imageData, 0, 0);
+        const offsetX = parseInt(document.getElementById('cutoutOffsetX').value);
+        const offsetY = parseInt(document.getElementById('cutoutOffsetY').value);
+        croppedTextImage = { canvas: tempCanvas, scale, offsetX, offsetY };
+        const rawTitle = tagTitle.value || '';
+        [tagNormal, tagActive].forEach(tag => {
+            tag.querySelectorAll('.cropped-text-img').forEach(el => el.remove());
+            tag.innerHTML = '';
+            if (rawTitle) { const span = document.createElement('span'); span.innerHTML = formatTitle(rawTitle); span.style.display = 'none'; tag.appendChild(span); }
+            const img = document.createElement('canvas');
+            img.className = 'cropped-text-img';
+            img.width = tempCanvas.width * scale;
+            img.height = tempCanvas.height * scale;
+            img.style.position = 'absolute';
+            img.style.left = offsetX + 'px';
+            img.style.top = offsetY + 'px';
+            img.getContext('2d').drawImage(tempCanvas, 0, 0, img.width, img.height);
+            tag.appendChild(img);
+        });
+        showToast('📌 已合成到标签');
+    }
+
+    // === 下载 ===
+    function downloadTag(state) {
+        const tag = state === 'active' ? tagActive : tagNormal;
+        const tagRect = tag.getBoundingClientRect();
+        const wrapper = tag.parentElement;
+        const wrapperRect = wrapper.getBoundingClientRect();
+        const canvas = document.createElement('canvas');
+        canvas.width = 180 * 2;
+        canvas.height = 78 * 2;
+        const ctx = canvas.getContext('2d');
+        ctx.scale(2, 2);
+        const html = tag.outerHTML;
+        const svgData = `<svg xmlns="http://www.w3.org/2000/svg" width="180" height="78"><foreignObject width="180" height="78">${html.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}</foreignObject></svg>`;
+        const img = new Image();
+        img.onload = () => {
+            ctx.drawImage(img, 0, 0, 180, 78);
+            const link = document.createElement('a');
+            link.download = `channel-tag-${state}-${Date.now()}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            showToast('✅ 已下载 ' + (state==='active'?'选中':'常态') + ' 标签');
+        };
+        img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+    }
+
+    // === 初始化 ===
+    updatePreview();
+})();
+</script>
+</body>
+</html> = document.getElementById('cropCanvas');
+        const maxW = Math.min(500, refImageData.width);
+        const scale = maxW / refImageData.width;
+        canvas.onmousedown = (e) => { cropStart = {x: e.offsetX, y: e.offsetY}; cropEnd = null; };
+        canvas.onmousemove = (e) => {
+            if (!cropStart) return;
+            cropEnd = {x: e.offsetX, y: e.offsetY};
+            const ctx2 = canvas.getContext('2d');
+            ctx2.drawImage(refImageData, 0, 0, canvas.width, canvas.height);
+            ctx2.strokeStyle = '#22c55e';
+            ctx2.lineWidth = 2;
+            ctx2.setLineDash([6,3]);
+            const x = Math.min(cropStart.x, cropEnd.x);
+            const y = Math.min(cropStart.y, cropEnd.y);
+            const w = Math.abs(cropEnd.x - cropStart.x);
+            const h = Math.abs(cropEnd.y - cropStart.y);
+            ctx2.strokeRect(x, y, w, h);
+        };
+        canvas.onmouseup = (e) => { cropEnd = {x: e.offsetX, y: e.offsetY}; };
+    }
+
+    function confirmCrop() {
+        if (!cropStart || !cropEnd) { showToast('请先框选区域'); return; }
+        const canvas = document.getElementById('cropCanvas');
+        const x = Math.min(cropStart.x, cropEnd.x);
+        const y = Math.min(cropStart.y, cropEnd.y);
+        const w = Math.abs(cropEnd.x - cropStart.x);
+        const h = Math.abs(cropEnd.y - cropStart.y);
+        if (w < 5 || h < 5) { showToast('框选区域太小'); return; }
+        const croppedCanvas = document.createElement('canvas');
+        croppedCanvas.width = w; croppedCanvas.height = h;
+        croppedCanvas.getContext('2d').drawImage(canvas, x, y, w, h, 0, 0, w, h);
+        rawCropData = { canvas: croppedCanvas, width: w, height: h, scale: canvas._scale };
+        document.getElementById('cropArea').style.display = 'none';
+        document.getElementById('cutoutPreview').style.display = 'block';
+        updateCutoutPreview();
+    }
+
+    function cancelCrop() {
+        document.getElementById('cropArea').style.display = 'none';
+        cropStart = null; cropEnd = null;
+    }
+
+    function removeImageBackground(imageData, tolerance) {
+        const data = imageData.data;
+        const bgColor = {r: data[0], g: data[1], b: data[2]};
+        const corners = [
+            {r: data[0], g: data[1], b: data[2]},
+            {r: data[(imageData.width-1)*4], g: data[(imageData.width-1)*4+1], b: data[(imageData.width-1)*4+2]},
+            {r: data[(imageData.height-1)*imageData.width*4], g: data[(imageData.height-1)*imageData.width*4+1], b: data[(imageData.height-1)*imageData.width*4+2]},
+            {r: data[((imageData.height-1)*imageData.width+imageData.width-1)*4], g: data[((imageData.height-1)*imageData.width+imageData.width-1)*4+1], b: data[((imageData.height-1)*imageData.width+imageData.width-1)*4+2]}
+        ];
+        const avgBg = {r:0,g:0,b:0};
+        corners.forEach(c => { avgBg.r+=c.r; avgBg.g+=c.g; avgBg.b+=c.b; });
+        avgBg.r = Math.round(avgBg.r/4); avgBg.g = Math.round(avgBg.g/4); avgBg.b = Math.round(avgBg.b/4);
+        for (let i = 0; i < data.length; i += 4) {
+            const dr = data[i]-avgBg.r, dg = data[i+1]-avgBg.g, db = data[i+2]-avgBg.b;
+            const dist = Math.sqrt(dr*dr+dg*dg+db*db);
+            if (dist < tolerance * 4.5) data[i+3] = 0;
+        }
+    }
+
+    function updateCutoutPreview() {
+        if (!rawCropData) return;
+        const tolerance = parseInt(document.getElementById('cutoutTolerance').value);
+        document.getElementById('cutoutToleranceVal').textContent = tolerance;
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = rawCropData.width; tempCanvas.height = rawCropData.height;
+        const ctx = tempCanvas.getContext('2d');
+        ctx.drawImage(rawCropData.canvas, 0, 0);
+        const imageData = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+        removeImageBackground(imageData, tolerance);
+        ctx.putImageData(imageData, 0, 0);
+        const previewCanvas = document.getElementById('cutoutPreviewCanvas');
+        const scale = parseFloat(document.getElementById('cutoutScale').value) / 100;
+        previewCanvas.width = rawCropData.width * scale;
+        previewCanvas.height = rawCropData.height * scale;
+        const pctx = previewCanvas.getContext('2d');
+        pctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+        pctx.drawImage(tempCanvas, 0, 0, previewCanvas.width, previewCanvas.height);
+    }
+
+    function updateCutoutScale() {
+        const v = parseInt(document.getElementById('cutoutScale').value);
+        document.getElementById('cutoutScaleVal').textContent = (v/100).toFixed(1);
+        updateCutoutPreview();
+    }
+
+    function updateCutoutPosition() {
+        document.getElementById('cutoutXVal').textContent = document.getElementById('cutoutOffsetX').value;
+        document.getElementById('cutoutYVal').textContent = document.getElementById('cutoutOffsetY').value;
+        if (croppedTextImage) applyCutoutToTag();
+    }
+
+    function applyCutoutToTag() {
+        if (!rawCropData) return;
+        const tolerance = parseInt(document.getElementById('cutoutTolerance').value);
+        const scale = parseInt(document.getElementById('cutoutScale').value) / 100;
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = rawCropData.width; tempCanvas.height = rawCropData.height;
+        const ctx = tempCanvas.getContext('2d');
+        ctx.drawImage(rawCropData.canvas, 0, 0);
+        const imageData = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+        removeImageBackground(imageData, tolerance);
+        ctx.putImageData(imageData, 0, 0);
+        const offsetX = parseInt(document.getElementById('cutoutOffsetX').value);
+        const offsetY = parseInt(document.getElementById('cutoutOffsetY').value);
+        croppedTextImage = { canvas: tempCanvas, scale, offsetX, offsetY };
+        const rawTitle = tagTitle.value || '';
+        [tagNormal, tagActive].forEach(tag => {
+            tag.querySelectorAll('.cropped-text-img').forEach(el => el.remove());
+            tag.innerHTML = '';
+            if (rawTitle) { const span = document.createElement('span'); span.innerHTML = formatTitle(rawTitle); span.style.display = 'none'; tag.appendChild(span); }
+            const img = document.createElement('canvas');
+            img.className = 'cropped-text-img';
+            img.width = tempCanvas.width * scale;
+            img.height = tempCanvas.height * scale;
+            img.style.position = 'absolute';
+            img.style.left = offsetX + 'px';
+            img.style.top = offsetY + 'px';
+            img.getContext('2d').drawImage(tempCanvas, 0, 0, img.width, img.height);
+            tag.appendChild(img);
+        });
+        showToast('📌 已合成到标签');
+    }
+
+    // === 下载 ===
+    function downloadTag(state) {
+        const tag = state === 'active' ? tagActive : tagNormal;
+        const tagRect = tag.getBoundingClientRect();
+        const wrapper = tag.parentElement;
+        const wrapperRect = wrapper.getBoundingClientRect();
+        const canvas = document.createElement('canvas');
+        canvas.width = 180 * 2;
+        canvas.height = 78 * 2;
+        const ctx = canvas.getContext('2d');
+        ctx.scale(2, 2);
+        const html = tag.outerHTML;
+        const svgData = `<svg xmlns="http://www.w3.org/2000/svg" width="180" height="78"><foreignObject width="180" height="78">${html.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}</foreignObject></svg>`;
+        const img = new Image();
+        img.onload = () => {
+            ctx.drawImage(img, 0, 0, 180, 78);
+            const link = document.createElement('a');
+            link.download = `channel-tag-${state}-${Date.now()}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            showToast('✅ 已下载 ' + (state==='active'?'选中':'常态') + ' 标签');
+        };
+        img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+    }
+
+    // === 初始化 ===
+    updatePreview();
+})();
+</script>
+</body>
+</html>.width = maxW;
+        canvas.onmousedown = (e) => { cropStart = {x: e.offsetX, y: e.offsetY}; cropEnd = null; };
+        canvas.onmousemove = (e) => {
+            if (!cropStart) return;
+            cropEnd = {x: e.offsetX, y: e.offsetY};
+            const ctx2 = canvas.getContext('2d');
+            ctx2.drawImage(refImageData, 0, 0, canvas.width, canvas.height);
+            ctx2.strokeStyle = '#22c55e';
+            ctx2.lineWidth = 2;
+            ctx2.setLineDash([6,3]);
+            const x = Math.min(cropStart.x, cropEnd.x);
+            const y = Math.min(cropStart.y, cropEnd.y);
+            const w = Math.abs(cropEnd.x - cropStart.x);
+            const h = Math.abs(cropEnd.y - cropStart.y);
+            ctx2.strokeRect(x, y, w, h);
+        };
+        canvas.onmouseup = (e) => { cropEnd = {x: e.offsetX, y: e.offsetY}; };
+    }
+
+    function confirmCrop() {
+        if (!cropStart || !cropEnd) { showToast('请先框选区域'); return; }
+        const canvas = document.getElementById('cropCanvas');
+        const x = Math.min(cropStart.x, cropEnd.x);
+        const y = Math.min(cropStart.y, cropEnd.y);
+        const w = Math.abs(cropEnd.x - cropStart.x);
+        const h = Math.abs(cropEnd.y - cropStart.y);
+        if (w < 5 || h < 5) { showToast('框选区域太小'); return; }
+        const croppedCanvas = document.createElement('canvas');
+        croppedCanvas.width = w; croppedCanvas.height = h;
+        croppedCanvas.getContext('2d').drawImage(canvas, x, y, w, h, 0, 0, w, h);
+        rawCropData = { canvas: croppedCanvas, width: w, height: h, scale: canvas._scale };
+        document.getElementById('cropArea').style.display = 'none';
+        document.getElementById('cutoutPreview').style.display = 'block';
+        updateCutoutPreview();
+    }
+
+    function cancelCrop() {
+        document.getElementById('cropArea').style.display = 'none';
+        cropStart = null; cropEnd = null;
+    }
+
+    function removeImageBackground(imageData, tolerance) {
+        const data = imageData.data;
+        const bgColor = {r: data[0], g: data[1], b: data[2]};
+        const corners = [
+            {r: data[0], g: data[1], b: data[2]},
+            {r: data[(imageData.width-1)*4], g: data[(imageData.width-1)*4+1], b: data[(imageData.width-1)*4+2]},
+            {r: data[(imageData.height-1)*imageData.width*4], g: data[(imageData.height-1)*imageData.width*4+1], b: data[(imageData.height-1)*imageData.width*4+2]},
+            {r: data[((imageData.height-1)*imageData.width+imageData.width-1)*4], g: data[((imageData.height-1)*imageData.width+imageData.width-1)*4+1], b: data[((imageData.height-1)*imageData.width+imageData.width-1)*4+2]}
+        ];
+        const avgBg = {r:0,g:0,b:0};
+        corners.forEach(c => { avgBg.r+=c.r; avgBg.g+=c.g; avgBg.b+=c.b; });
+        avgBg.r = Math.round(avgBg.r/4); avgBg.g = Math.round(avgBg.g/4); avgBg.b = Math.round(avgBg.b/4);
+        for (let i = 0; i < data.length; i += 4) {
+            const dr = data[i]-avgBg.r, dg = data[i+1]-avgBg.g, db = data[i+2]-avgBg.b;
+            const dist = Math.sqrt(dr*dr+dg*dg+db*db);
+            if (dist < tolerance * 4.5) data[i+3] = 0;
+        }
+    }
+
+    function updateCutoutPreview() {
+        if (!rawCropData) return;
+        const tolerance = parseInt(document.getElementById('cutoutTolerance').value);
+        document.getElementById('cutoutToleranceVal').textContent = tolerance;
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = rawCropData.width; tempCanvas.height = rawCropData.height;
+        const ctx = tempCanvas.getContext('2d');
+        ctx.drawImage(rawCropData.canvas, 0, 0);
+        const imageData = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+        removeImageBackground(imageData, tolerance);
+        ctx.putImageData(imageData, 0, 0);
+        const previewCanvas = document.getElementById('cutoutPreviewCanvas');
+        const scale = parseFloat(document.getElementById('cutoutScale').value) / 100;
+        previewCanvas.width = rawCropData.width * scale;
+        previewCanvas.height = rawCropData.height * scale;
+        const pctx = previewCanvas.getContext('2d');
+        pctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+        pctx.drawImage(tempCanvas, 0, 0, previewCanvas.width, previewCanvas.height);
+    }
+
+    function updateCutoutScale() {
+        const v = parseInt(document.getElementById('cutoutScale').value);
+        document.getElementById('cutoutScaleVal').textContent = (v/100).toFixed(1);
+        updateCutoutPreview();
+    }
+
+    function updateCutoutPosition() {
+        document.getElementById('cutoutXVal').textContent = document.getElementById('cutoutOffsetX').value;
+        document.getElementById('cutoutYVal').textContent = document.getElementById('cutoutOffsetY').value;
+        if (croppedTextImage) applyCutoutToTag();
+    }
+
+    function applyCutoutToTag() {
+        if (!rawCropData) return;
+        const tolerance = parseInt(document.getElementById('cutoutTolerance').value);
+        const scale = parseInt(document.getElementById('cutoutScale').value) / 100;
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = rawCropData.width; tempCanvas.height = rawCropData.height;
+        const ctx = tempCanvas.getContext('2d');
+        ctx.drawImage(rawCropData.canvas, 0, 0);
+        const imageData = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+        removeImageBackground(imageData, tolerance);
+        ctx.putImageData(imageData, 0, 0);
+        const offsetX = parseInt(document.getElementById('cutoutOffsetX').value);
+        const offsetY = parseInt(document.getElementById('cutoutOffsetY').value);
+        croppedTextImage = { canvas: tempCanvas, scale, offsetX, offsetY };
+        const rawTitle = tagTitle.value || '';
+        [tagNormal, tagActive].forEach(tag => {
+            tag.querySelectorAll('.cropped-text-img').forEach(el => el.remove());
+            tag.innerHTML = '';
+            if (rawTitle) { const span = document.createElement('span'); span.innerHTML = formatTitle(rawTitle); span.style.display = 'none'; tag.appendChild(span); }
+            const img = document.createElement('canvas');
+            img.className = 'cropped-text-img';
+            img.width = tempCanvas.width * scale;
+            img.height = tempCanvas.height * scale;
+            img.style.position = 'absolute';
+            img.style.left = offsetX + 'px';
+            img.style.top = offsetY + 'px';
+            img.getContext('2d').drawImage(tempCanvas, 0, 0, img.width, img.height);
+            tag.appendChild(img);
+        });
+        showToast('📌 已合成到标签');
+    }
+
+    // === 下载 ===
+    function downloadTag(state) {
+        const tag = state === 'active' ? tagActive : tagNormal;
+        const tagRect = tag.getBoundingClientRect();
+        const wrapper = tag.parentElement;
+        const wrapperRect = wrapper.getBoundingClientRect();
+        const canvas = document.createElement('canvas');
+        canvas.width = 180 * 2;
+        canvas.height = 78 * 2;
+        const ctx = canvas.getContext('2d');
+        ctx.scale(2, 2);
+        const html = tag.outerHTML;
+        const svgData = `<svg xmlns="http://www.w3.org/2000/svg" width="180" height="78"><foreignObject width="180" height="78">${html.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}</foreignObject></svg>`;
+        const img = new Image();
+        img.onload = () => {
+            ctx.drawImage(img, 0, 0, 180, 78);
+            const link = document.createElement('a');
+            link.download = `channel-tag-${state}-${Date.now()}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            showToast('✅ 已下载 ' + (state==='active'?'选中':'常态') + ' 标签');
+        };
+        img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+    }
+
+    // === 初始化 ===
+    updatePreview();
+})();
+</script>
+</body>
+</html>.height = refImageData.height * scale;
+        canvas.onmousedown = (e) => { cropStart = {x: e.offsetX, y: e.offsetY}; cropEnd = null; };
+        canvas.onmousemove = (e) => {
+            if (!cropStart) return;
+            cropEnd = {x: e.offsetX, y: e.offsetY};
+            const ctx2 = canvas.getContext('2d');
+            ctx2.drawImage(refImageData, 0, 0, canvas.width, canvas.height);
+            ctx2.strokeStyle = '#22c55e';
+            ctx2.lineWidth = 2;
+            ctx2.setLineDash([6,3]);
+            const x = Math.min(cropStart.x, cropEnd.x);
+            const y = Math.min(cropStart.y, cropEnd.y);
+            const w = Math.abs(cropEnd.x - cropStart.x);
+            const h = Math.abs(cropEnd.y - cropStart.y);
+            ctx2.strokeRect(x, y, w, h);
+        };
+        canvas.onmouseup = (e) => { cropEnd = {x: e.offsetX, y: e.offsetY}; };
+    }
+
+    function confirmCrop() {
+        if (!cropStart || !cropEnd) { showToast('请先框选区域'); return; }
+        const canvas = document.getElementById('cropCanvas');
+        const x = Math.min(cropStart.x, cropEnd.x);
+        const y = Math.min(cropStart.y, cropEnd.y);
+        const w = Math.abs(cropEnd.x - cropStart.x);
+        const h = Math.abs(cropEnd.y - cropStart.y);
+        if (w < 5 || h < 5) { showToast('框选区域太小'); return; }
+        const croppedCanvas = document.createElement('canvas');
+        croppedCanvas.width = w; croppedCanvas.height = h;
+        croppedCanvas.getContext('2d').drawImage(canvas, x, y, w, h, 0, 0, w, h);
+        rawCropData = { canvas: croppedCanvas, width: w, height: h, scale: canvas._scale };
+        document.getElementById('cropArea').style.display = 'none';
+        document.getElementById('cutoutPreview').style.display = 'block';
+        updateCutoutPreview();
+    }
+
+    function cancelCrop() {
+        document.getElementById('cropArea').style.display = 'none';
+        cropStart = null; cropEnd = null;
+    }
+
+    function removeImageBackground(imageData, tolerance) {
+        const data = imageData.data;
+        const bgColor = {r: data[0], g: data[1], b: data[2]};
+        const corners = [
+            {r: data[0], g: data[1], b: data[2]},
+            {r: data[(imageData.width-1)*4], g: data[(imageData.width-1)*4+1], b: data[(imageData.width-1)*4+2]},
+            {r: data[(imageData.height-1)*imageData.width*4], g: data[(imageData.height-1)*imageData.width*4+1], b: data[(imageData.height-1)*imageData.width*4+2]},
+            {r: data[((imageData.height-1)*imageData.width+imageData.width-1)*4], g: data[((imageData.height-1)*imageData.width+imageData.width-1)*4+1], b: data[((imageData.height-1)*imageData.width+imageData.width-1)*4+2]}
+        ];
+        const avgBg = {r:0,g:0,b:0};
+        corners.forEach(c => { avgBg.r+=c.r; avgBg.g+=c.g; avgBg.b+=c.b; });
+        avgBg.r = Math.round(avgBg.r/4); avgBg.g = Math.round(avgBg.g/4); avgBg.b = Math.round(avgBg.b/4);
+        for (let i = 0; i < data.length; i += 4) {
+            const dr = data[i]-avgBg.r, dg = data[i+1]-avgBg.g, db = data[i+2]-avgBg.b;
+            const dist = Math.sqrt(dr*dr+dg*dg+db*db);
+            if (dist < tolerance * 4.5) data[i+3] = 0;
+        }
+    }
+
+    function updateCutoutPreview() {
+        if (!rawCropData) return;
+        const tolerance = parseInt(document.getElementById('cutoutTolerance').value);
+        document.getElementById('cutoutToleranceVal').textContent = tolerance;
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = rawCropData.width; tempCanvas.height = rawCropData.height;
+        const ctx = tempCanvas.getContext('2d');
+        ctx.drawImage(rawCropData.canvas, 0, 0);
+        const imageData = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+        removeImageBackground(imageData, tolerance);
+        ctx.putImageData(imageData, 0, 0);
+        const previewCanvas = document.getElementById('cutoutPreviewCanvas');
+        const scale = parseFloat(document.getElementById('cutoutScale').value) / 100;
+        previewCanvas.width = rawCropData.width * scale;
+        previewCanvas.height = rawCropData.height * scale;
+        const pctx = previewCanvas.getContext('2d');
+        pctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+        pctx.drawImage(tempCanvas, 0, 0, previewCanvas.width, previewCanvas.height);
+    }
+
+    function updateCutoutScale() {
+        const v = parseInt(document.getElementById('cutoutScale').value);
+        document.getElementById('cutoutScaleVal').textContent = (v/100).toFixed(1);
+        updateCutoutPreview();
+    }
+
+    function updateCutoutPosition() {
+        document.getElementById('cutoutXVal').textContent = document.getElementById('cutoutOffsetX').value;
+        document.getElementById('cutoutYVal').textContent = document.getElementById('cutoutOffsetY').value;
+        if (croppedTextImage) applyCutoutToTag();
+    }
+
+    function applyCutoutToTag() {
+        if (!rawCropData) return;
+        const tolerance = parseInt(document.getElementById('cutoutTolerance').value);
+        const scale = parseInt(document.getElementById('cutoutScale').value) / 100;
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = rawCropData.width; tempCanvas.height = rawCropData.height;
+        const ctx = tempCanvas.getContext('2d');
+        ctx.drawImage(rawCropData.canvas, 0, 0);
+        const imageData = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+        removeImageBackground(imageData, tolerance);
+        ctx.putImageData(imageData, 0, 0);
+        const offsetX = parseInt(document.getElementById('cutoutOffsetX').value);
+        const offsetY = parseInt(document.getElementById('cutoutOffsetY').value);
+        croppedTextImage = { canvas: tempCanvas, scale, offsetX, offsetY };
+        const rawTitle = tagTitle.value || '';
+        [tagNormal, tagActive].forEach(tag => {
+            tag.querySelectorAll('.cropped-text-img').forEach(el => el.remove());
+            tag.innerHTML = '';
+            if (rawTitle) { const span = document.createElement('span'); span.innerHTML = formatTitle(rawTitle); span.style.display = 'none'; tag.appendChild(span); }
+            const img = document.createElement('canvas');
+            img.className = 'cropped-text-img';
+            img.width = tempCanvas.width * scale;
+            img.height = tempCanvas.height * scale;
+            img.style.position = 'absolute';
+            img.style.left = offsetX + 'px';
+            img.style.top = offsetY + 'px';
+            img.getContext('2d').drawImage(tempCanvas, 0, 0, img.width, img.height);
+            tag.appendChild(img);
+        });
+        showToast('📌 已合成到标签');
+    }
+
+    // === 下载 ===
+    function downloadTag(state) {
+        const tag = state === 'active' ? tagActive : tagNormal;
+        const tagRect = tag.getBoundingClientRect();
+        const wrapper = tag.parentElement;
+        const wrapperRect = wrapper.getBoundingClientRect();
+        const canvas = document.createElement('canvas');
+        canvas.width = 180 * 2;
+        canvas.height = 78 * 2;
+        const ctx = canvas.getContext('2d');
+        ctx.scale(2, 2);
+        const html = tag.outerHTML;
+        const svgData = `<svg xmlns="http://www.w3.org/2000/svg" width="180" height="78"><foreignObject width="180" height="78">${html.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}</foreignObject></svg>`;
+        const img = new Image();
+        img.onload = () => {
+            ctx.drawImage(img, 0, 0, 180, 78);
+            const link = document.createElement('a');
+            link.download = `channel-tag-${state}-${Date.now()}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            showToast('✅ 已下载 ' + (state==='active'?'选中':'常态') + ' 标签');
+        };
+        img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+    }
+
+    // === 初始化 ===
+    updatePreview();
+})();
+</script>
+</body>
+</html>._scale = scale;
+        const ctx = canvas.onmousedown = (e) => { cropStart = {x: e.offsetX, y: e.offsetY}; cropEnd = null; };
+        canvas.onmousemove = (e) => {
+            if (!cropStart) return;
+            cropEnd = {x: e.offsetX, y: e.offsetY};
+            const ctx2 = canvas.getContext('2d');
+            ctx2.drawImage(refImageData, 0, 0, canvas.width, canvas.height);
+            ctx2.strokeStyle = '#22c55e';
+            ctx2.lineWidth = 2;
+            ctx2.setLineDash([6,3]);
+            const x = Math.min(cropStart.x, cropEnd.x);
+            const y = Math.min(cropStart.y, cropEnd.y);
+            const w = Math.abs(cropEnd.x - cropStart.x);
+            const h = Math.abs(cropEnd.y - cropStart.y);
+            ctx2.strokeRect(x, y, w, h);
+        };
+        canvas.onmouseup = (e) => { cropEnd = {x: e.offsetX, y: e.offsetY}; };
+    }
+
+    function confirmCrop() {
+        if (!cropStart || !cropEnd) { showToast('请先框选区域'); return; }
+        const canvas = document.getElementById('cropCanvas');
+        const x = Math.min(cropStart.x, cropEnd.x);
+        const y = Math.min(cropStart.y, cropEnd.y);
+        const w = Math.abs(cropEnd.x - cropStart.x);
+        const h = Math.abs(cropEnd.y - cropStart.y);
+        if (w < 5 || h < 5) { showToast('框选区域太小'); return; }
+        const croppedCanvas = document.createElement('canvas');
+        croppedCanvas.width = w; croppedCanvas.height = h;
+        croppedCanvas.getContext('2d').drawImage(canvas, x, y, w, h, 0, 0, w, h);
+        rawCropData = { canvas: croppedCanvas, width: w, height: h, scale: canvas._scale };
+        document.getElementById('cropArea').style.display = 'none';
+        document.getElementById('cutoutPreview').style.display = 'block';
+        updateCutoutPreview();
+    }
+
+    function cancelCrop() {
+        document.getElementById('cropArea').style.display = 'none';
+        cropStart = null; cropEnd = null;
+    }
+
+    function removeImageBackground(imageData, tolerance) {
+        const data = imageData.data;
+        const bgColor = {r: data[0], g: data[1], b: data[2]};
+        const corners = [
+            {r: data[0], g: data[1], b: data[2]},
+            {r: data[(imageData.width-1)*4], g: data[(imageData.width-1)*4+1], b: data[(imageData.width-1)*4+2]},
+            {r: data[(imageData.height-1)*imageData.width*4], g: data[(imageData.height-1)*imageData.width*4+1], b: data[(imageData.height-1)*imageData.width*4+2]},
+            {r: data[((imageData.height-1)*imageData.width+imageData.width-1)*4], g: data[((imageData.height-1)*imageData.width+imageData.width-1)*4+1], b: data[((imageData.height-1)*imageData.width+imageData.width-1)*4+2]}
+        ];
+        const avgBg = {r:0,g:0,b:0};
+        corners.forEach(c => { avgBg.r+=c.r; avgBg.g+=c.g; avgBg.b+=c.b; });
+        avgBg.r = Math.round(avgBg.r/4); avgBg.g = Math.round(avgBg.g/4); avgBg.b = Math.round(avgBg.b/4);
+        for (let i = 0; i < data.length; i += 4) {
+            const dr = data[i]-avgBg.r, dg = data[i+1]-avgBg.g, db = data[i+2]-avgBg.b;
+            const dist = Math.sqrt(dr*dr+dg*dg+db*db);
+            if (dist < tolerance * 4.5) data[i+3] = 0;
+        }
+    }
+
+    function updateCutoutPreview() {
+        if (!rawCropData) return;
+        const tolerance = parseInt(document.getElementById('cutoutTolerance').value);
+        document.getElementById('cutoutToleranceVal').textContent = tolerance;
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = rawCropData.width; tempCanvas.height = rawCropData.height;
+        const ctx = tempCanvas.getContext('2d');
+        ctx.drawImage(rawCropData.canvas, 0, 0);
+        const imageData = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+        removeImageBackground(imageData, tolerance);
+        ctx.putImageData(imageData, 0, 0);
+        const previewCanvas = document.getElementById('cutoutPreviewCanvas');
+        const scale = parseFloat(document.getElementById('cutoutScale').value) / 100;
+        previewCanvas.width = rawCropData.width * scale;
+        previewCanvas.height = rawCropData.height * scale;
+        const pctx = previewCanvas.getContext('2d');
+        pctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+        pctx.drawImage(tempCanvas, 0, 0, previewCanvas.width, previewCanvas.height);
+    }
+
+    function updateCutoutScale() {
+        const v = parseInt(document.getElementById('cutoutScale').value);
+        document.getElementById('cutoutScaleVal').textContent = (v/100).toFixed(1);
+        updateCutoutPreview();
+    }
+
+    function updateCutoutPosition() {
+        document.getElementById('cutoutXVal').textContent = document.getElementById('cutoutOffsetX').value;
+        document.getElementById('cutoutYVal').textContent = document.getElementById('cutoutOffsetY').value;
+        if (croppedTextImage) applyCutoutToTag();
+    }
+
+    function applyCutoutToTag() {
+        if (!rawCropData) return;
+        const tolerance = parseInt(document.getElementById('cutoutTolerance').value);
+        const scale = parseInt(document.getElementById('cutoutScale').value) / 100;
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = rawCropData.width; tempCanvas.height = rawCropData.height;
+        const ctx = tempCanvas.getContext('2d');
+        ctx.drawImage(rawCropData.canvas, 0, 0);
+        const imageData = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+        removeImageBackground(imageData, tolerance);
+        ctx.putImageData(imageData, 0, 0);
+        const offsetX = parseInt(document.getElementById('cutoutOffsetX').value);
+        const offsetY = parseInt(document.getElementById('cutoutOffsetY').value);
+        croppedTextImage = { canvas: tempCanvas, scale, offsetX, offsetY };
+        const rawTitle = tagTitle.value || '';
+        [tagNormal, tagActive].forEach(tag => {
+            tag.querySelectorAll('.cropped-text-img').forEach(el => el.remove());
+            tag.innerHTML = '';
+            if (rawTitle) { const span = document.createElement('span'); span.innerHTML = formatTitle(rawTitle); span.style.display = 'none'; tag.appendChild(span); }
+            const img = document.createElement('canvas');
+            img.className = 'cropped-text-img';
+            img.width = tempCanvas.width * scale;
+            img.height = tempCanvas.height * scale;
+            img.style.position = 'absolute';
+            img.style.left = offsetX + 'px';
+            img.style.top = offsetY + 'px';
+            img.getContext('2d').drawImage(tempCanvas, 0, 0, img.width, img.height);
+            tag.appendChild(img);
+        });
+        showToast('📌 已合成到标签');
+    }
+
+    // === 下载 ===
+    function downloadTag(state) {
+        const tag = state === 'active' ? tagActive : tagNormal;
+        const tagRect = tag.getBoundingClientRect();
+        const wrapper = tag.parentElement;
+        const wrapperRect = wrapper.getBoundingClientRect();
+        const canvas = document.createElement('canvas');
+        canvas.width = 180 * 2;
+        canvas.height = 78 * 2;
+        const ctx = canvas.getContext('2d');
+        ctx.scale(2, 2);
+        const html = tag.outerHTML;
+        const svgData = `<svg xmlns="http://www.w3.org/2000/svg" width="180" height="78"><foreignObject width="180" height="78">${html.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}</foreignObject></svg>`;
+        const img = new Image();
+        img.onload = () => {
+            ctx.drawImage(img, 0, 0, 180, 78);
+            const link = document.createElement('a');
+            link.download = `channel-tag-${state}-${Date.now()}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            showToast('✅ 已下载 ' + (state==='active'?'选中':'常态') + ' 标签');
+        };
+        img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+    }
+
+    // === 初始化 ===
+    updatePreview();
+})();
+</script>
+</body>
+</html>.getContext('2d');
+        ctx.drawImage(refImageData, 0, 0, canvas.onmousedown = (e) => { cropStart = {x: e.offsetX, y: e.offsetY}; cropEnd = null; };
+        canvas.onmousemove = (e) => {
+            if (!cropStart) return;
+            cropEnd = {x: e.offsetX, y: e.offsetY};
+            const ctx2 = canvas.getContext('2d');
+            ctx2.drawImage(refImageData, 0, 0, canvas.width, canvas.height);
+            ctx2.strokeStyle = '#22c55e';
+            ctx2.lineWidth = 2;
+            ctx2.setLineDash([6,3]);
+            const x = Math.min(cropStart.x, cropEnd.x);
+            const y = Math.min(cropStart.y, cropEnd.y);
+            const w = Math.abs(cropEnd.x - cropStart.x);
+            const h = Math.abs(cropEnd.y - cropStart.y);
+            ctx2.strokeRect(x, y, w, h);
+        };
+        canvas.onmouseup = (e) => { cropEnd = {x: e.offsetX, y: e.offsetY}; };
+    }
+
+    function confirmCrop() {
+        if (!cropStart || !cropEnd) { showToast('请先框选区域'); return; }
+        const canvas = document.getElementById('cropCanvas');
+        const x = Math.min(cropStart.x, cropEnd.x);
+        const y = Math.min(cropStart.y, cropEnd.y);
+        const w = Math.abs(cropEnd.x - cropStart.x);
+        const h = Math.abs(cropEnd.y - cropStart.y);
+        if (w < 5 || h < 5) { showToast('框选区域太小'); return; }
+        const croppedCanvas = document.createElement('canvas');
+        croppedCanvas.width = w; croppedCanvas.height = h;
+        croppedCanvas.getContext('2d').drawImage(canvas, x, y, w, h, 0, 0, w, h);
+        rawCropData = { canvas: croppedCanvas, width: w, height: h, scale: canvas._scale };
+        document.getElementById('cropArea').style.display = 'none';
+        document.getElementById('cutoutPreview').style.display = 'block';
+        updateCutoutPreview();
+    }
+
+    function cancelCrop() {
+        document.getElementById('cropArea').style.display = 'none';
+        cropStart = null; cropEnd = null;
+    }
+
+    function removeImageBackground(imageData, tolerance) {
+        const data = imageData.data;
+        const bgColor = {r: data[0], g: data[1], b: data[2]};
+        const corners = [
+            {r: data[0], g: data[1], b: data[2]},
+            {r: data[(imageData.width-1)*4], g: data[(imageData.width-1)*4+1], b: data[(imageData.width-1)*4+2]},
+            {r: data[(imageData.height-1)*imageData.width*4], g: data[(imageData.height-1)*imageData.width*4+1], b: data[(imageData.height-1)*imageData.width*4+2]},
+            {r: data[((imageData.height-1)*imageData.width+imageData.width-1)*4], g: data[((imageData.height-1)*imageData.width+imageData.width-1)*4+1], b: data[((imageData.height-1)*imageData.width+imageData.width-1)*4+2]}
+        ];
+        const avgBg = {r:0,g:0,b:0};
+        corners.forEach(c => { avgBg.r+=c.r; avgBg.g+=c.g; avgBg.b+=c.b; });
+        avgBg.r = Math.round(avgBg.r/4); avgBg.g = Math.round(avgBg.g/4); avgBg.b = Math.round(avgBg.b/4);
+        for (let i = 0; i < data.length; i += 4) {
+            const dr = data[i]-avgBg.r, dg = data[i+1]-avgBg.g, db = data[i+2]-avgBg.b;
+            const dist = Math.sqrt(dr*dr+dg*dg+db*db);
+            if (dist < tolerance * 4.5) data[i+3] = 0;
+        }
+    }
+
+    function updateCutoutPreview() {
+        if (!rawCropData) return;
+        const tolerance = parseInt(document.getElementById('cutoutTolerance').value);
+        document.getElementById('cutoutToleranceVal').textContent = tolerance;
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = rawCropData.width; tempCanvas.height = rawCropData.height;
+        const ctx = tempCanvas.getContext('2d');
+        ctx.drawImage(rawCropData.canvas, 0, 0);
+        const imageData = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+        removeImageBackground(imageData, tolerance);
+        ctx.putImageData(imageData, 0, 0);
+        const previewCanvas = document.getElementById('cutoutPreviewCanvas');
+        const scale = parseFloat(document.getElementById('cutoutScale').value) / 100;
+        previewCanvas.width = rawCropData.width * scale;
+        previewCanvas.height = rawCropData.height * scale;
+        const pctx = previewCanvas.getContext('2d');
+        pctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+        pctx.drawImage(tempCanvas, 0, 0, previewCanvas.width, previewCanvas.height);
+    }
+
+    function updateCutoutScale() {
+        const v = parseInt(document.getElementById('cutoutScale').value);
+        document.getElementById('cutoutScaleVal').textContent = (v/100).toFixed(1);
+        updateCutoutPreview();
+    }
+
+    function updateCutoutPosition() {
+        document.getElementById('cutoutXVal').textContent = document.getElementById('cutoutOffsetX').value;
+        document.getElementById('cutoutYVal').textContent = document.getElementById('cutoutOffsetY').value;
+        if (croppedTextImage) applyCutoutToTag();
+    }
+
+    function applyCutoutToTag() {
+        if (!rawCropData) return;
+        const tolerance = parseInt(document.getElementById('cutoutTolerance').value);
+        const scale = parseInt(document.getElementById('cutoutScale').value) / 100;
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = rawCropData.width; tempCanvas.height = rawCropData.height;
+        const ctx = tempCanvas.getContext('2d');
+        ctx.drawImage(rawCropData.canvas, 0, 0);
+        const imageData = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+        removeImageBackground(imageData, tolerance);
+        ctx.putImageData(imageData, 0, 0);
+        const offsetX = parseInt(document.getElementById('cutoutOffsetX').value);
+        const offsetY = parseInt(document.getElementById('cutoutOffsetY').value);
+        croppedTextImage = { canvas: tempCanvas, scale, offsetX, offsetY };
+        const rawTitle = tagTitle.value || '';
+        [tagNormal, tagActive].forEach(tag => {
+            tag.querySelectorAll('.cropped-text-img').forEach(el => el.remove());
+            tag.innerHTML = '';
+            if (rawTitle) { const span = document.createElement('span'); span.innerHTML = formatTitle(rawTitle); span.style.display = 'none'; tag.appendChild(span); }
+            const img = document.createElement('canvas');
+            img.className = 'cropped-text-img';
+            img.width = tempCanvas.width * scale;
+            img.height = tempCanvas.height * scale;
+            img.style.position = 'absolute';
+            img.style.left = offsetX + 'px';
+            img.style.top = offsetY + 'px';
+            img.getContext('2d').drawImage(tempCanvas, 0, 0, img.width, img.height);
+            tag.appendChild(img);
+        });
+        showToast('📌 已合成到标签');
+    }
+
+    // === 下载 ===
+    function downloadTag(state) {
+        const tag = state === 'active' ? tagActive : tagNormal;
+        const tagRect = tag.getBoundingClientRect();
+        const wrapper = tag.parentElement;
+        const wrapperRect = wrapper.getBoundingClientRect();
+        const canvas = document.createElement('canvas');
+        canvas.width = 180 * 2;
+        canvas.height = 78 * 2;
+        const ctx = canvas.getContext('2d');
+        ctx.scale(2, 2);
+        const html = tag.outerHTML;
+        const svgData = `<svg xmlns="http://www.w3.org/2000/svg" width="180" height="78"><foreignObject width="180" height="78">${html.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}</foreignObject></svg>`;
+        const img = new Image();
+        img.onload = () => {
+            ctx.drawImage(img, 0, 0, 180, 78);
+            const link = document.createElement('a');
+            link.download = `channel-tag-${state}-${Date.now()}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            showToast('✅ 已下载 ' + (state==='active'?'选中':'常态') + ' 标签');
+        };
+        img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+    }
+
+    // === 初始化 ===
+    updatePreview();
+})();
+</script>
+</body>
+</html>.width, canvas.onmousedown = (e) => { cropStart = {x: e.offsetX, y: e.offsetY}; cropEnd = null; };
+        canvas.onmousemove = (e) => {
+            if (!cropStart) return;
+            cropEnd = {x: e.offsetX, y: e.offsetY};
+            const ctx2 = canvas.getContext('2d');
+            ctx2.drawImage(refImageData, 0, 0, canvas.width, canvas.height);
+            ctx2.strokeStyle = '#22c55e';
+            ctx2.lineWidth = 2;
+            ctx2.setLineDash([6,3]);
+            const x = Math.min(cropStart.x, cropEnd.x);
+            const y = Math.min(cropStart.y, cropEnd.y);
+            const w = Math.abs(cropEnd.x - cropStart.x);
+            const h = Math.abs(cropEnd.y - cropStart.y);
+            ctx2.strokeRect(x, y, w, h);
+        };
+        canvas.onmouseup = (e) => { cropEnd = {x: e.offsetX, y: e.offsetY}; };
+    }
+
+    function confirmCrop() {
+        if (!cropStart || !cropEnd) { showToast('请先框选区域'); return; }
+        const canvas = document.getElementById('cropCanvas');
+        const x = Math.min(cropStart.x, cropEnd.x);
+        const y = Math.min(cropStart.y, cropEnd.y);
+        const w = Math.abs(cropEnd.x - cropStart.x);
+        const h = Math.abs(cropEnd.y - cropStart.y);
+        if (w < 5 || h < 5) { showToast('框选区域太小'); return; }
+        const croppedCanvas = document.createElement('canvas');
+        croppedCanvas.width = w; croppedCanvas.height = h;
+        croppedCanvas.getContext('2d').drawImage(canvas, x, y, w, h, 0, 0, w, h);
+        rawCropData = { canvas: croppedCanvas, width: w, height: h, scale: canvas._scale };
+        document.getElementById('cropArea').style.display = 'none';
+        document.getElementById('cutoutPreview').style.display = 'block';
+        updateCutoutPreview();
+    }
+
+    function cancelCrop() {
+        document.getElementById('cropArea').style.display = 'none';
+        cropStart = null; cropEnd = null;
+    }
+
+    function removeImageBackground(imageData, tolerance) {
+        const data = imageData.data;
+        const bgColor = {r: data[0], g: data[1], b: data[2]};
+        const corners = [
+            {r: data[0], g: data[1], b: data[2]},
+            {r: data[(imageData.width-1)*4], g: data[(imageData.width-1)*4+1], b: data[(imageData.width-1)*4+2]},
+            {r: data[(imageData.height-1)*imageData.width*4], g: data[(imageData.height-1)*imageData.width*4+1], b: data[(imageData.height-1)*imageData.width*4+2]},
+            {r: data[((imageData.height-1)*imageData.width+imageData.width-1)*4], g: data[((imageData.height-1)*imageData.width+imageData.width-1)*4+1], b: data[((imageData.height-1)*imageData.width+imageData.width-1)*4+2]}
+        ];
+        const avgBg = {r:0,g:0,b:0};
+        corners.forEach(c => { avgBg.r+=c.r; avgBg.g+=c.g; avgBg.b+=c.b; });
+        avgBg.r = Math.round(avgBg.r/4); avgBg.g = Math.round(avgBg.g/4); avgBg.b = Math.round(avgBg.b/4);
+        for (let i = 0; i < data.length; i += 4) {
+            const dr = data[i]-avgBg.r, dg = data[i+1]-avgBg.g, db = data[i+2]-avgBg.b;
+            const dist = Math.sqrt(dr*dr+dg*dg+db*db);
+            if (dist < tolerance * 4.5) data[i+3] = 0;
+        }
+    }
+
+    function updateCutoutPreview() {
+        if (!rawCropData) return;
+        const tolerance = parseInt(document.getElementById('cutoutTolerance').value);
+        document.getElementById('cutoutToleranceVal').textContent = tolerance;
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = rawCropData.width; tempCanvas.height = rawCropData.height;
+        const ctx = tempCanvas.getContext('2d');
+        ctx.drawImage(rawCropData.canvas, 0, 0);
+        const imageData = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+        removeImageBackground(imageData, tolerance);
+        ctx.putImageData(imageData, 0, 0);
+        const previewCanvas = document.getElementById('cutoutPreviewCanvas');
+        const scale = parseFloat(document.getElementById('cutoutScale').value) / 100;
+        previewCanvas.width = rawCropData.width * scale;
+        previewCanvas.height = rawCropData.height * scale;
+        const pctx = previewCanvas.getContext('2d');
+        pctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+        pctx.drawImage(tempCanvas, 0, 0, previewCanvas.width, previewCanvas.height);
+    }
+
+    function updateCutoutScale() {
+        const v = parseInt(document.getElementById('cutoutScale').value);
+        document.getElementById('cutoutScaleVal').textContent = (v/100).toFixed(1);
+        updateCutoutPreview();
+    }
+
+    function updateCutoutPosition() {
+        document.getElementById('cutoutXVal').textContent = document.getElementById('cutoutOffsetX').value;
+        document.getElementById('cutoutYVal').textContent = document.getElementById('cutoutOffsetY').value;
+        if (croppedTextImage) applyCutoutToTag();
+    }
+
+    function applyCutoutToTag() {
+        if (!rawCropData) return;
+        const tolerance = parseInt(document.getElementById('cutoutTolerance').value);
+        const scale = parseInt(document.getElementById('cutoutScale').value) / 100;
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = rawCropData.width; tempCanvas.height = rawCropData.height;
+        const ctx = tempCanvas.getContext('2d');
+        ctx.drawImage(rawCropData.canvas, 0, 0);
+        const imageData = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+        removeImageBackground(imageData, tolerance);
+        ctx.putImageData(imageData, 0, 0);
+        const offsetX = parseInt(document.getElementById('cutoutOffsetX').value);
+        const offsetY = parseInt(document.getElementById('cutoutOffsetY').value);
+        croppedTextImage = { canvas: tempCanvas, scale, offsetX, offsetY };
+        const rawTitle = tagTitle.value || '';
+        [tagNormal, tagActive].forEach(tag => {
+            tag.querySelectorAll('.cropped-text-img').forEach(el => el.remove());
+            tag.innerHTML = '';
+            if (rawTitle) { const span = document.createElement('span'); span.innerHTML = formatTitle(rawTitle); span.style.display = 'none'; tag.appendChild(span); }
+            const img = document.createElement('canvas');
+            img.className = 'cropped-text-img';
+            img.width = tempCanvas.width * scale;
+            img.height = tempCanvas.height * scale;
+            img.style.position = 'absolute';
+            img.style.left = offsetX + 'px';
+            img.style.top = offsetY + 'px';
+            img.getContext('2d').drawImage(tempCanvas, 0, 0, img.width, img.height);
+            tag.appendChild(img);
+        });
+        showToast('📌 已合成到标签');
+    }
+
+    // === 下载 ===
+    function downloadTag(state) {
+        const tag = state === 'active' ? tagActive : tagNormal;
+        const tagRect = tag.getBoundingClientRect();
+        const wrapper = tag.parentElement;
+        const wrapperRect = wrapper.getBoundingClientRect();
+        const canvas = document.createElement('canvas');
+        canvas.width = 180 * 2;
+        canvas.height = 78 * 2;
+        const ctx = canvas.getContext('2d');
+        ctx.scale(2, 2);
+        const html = tag.outerHTML;
+        const svgData = `<svg xmlns="http://www.w3.org/2000/svg" width="180" height="78"><foreignObject width="180" height="78">${html.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}</foreignObject></svg>`;
+        const img = new Image();
+        img.onload = () => {
+            ctx.drawImage(img, 0, 0, 180, 78);
+            const link = document.createElement('a');
+            link.download = `channel-tag-${state}-${Date.now()}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            showToast('✅ 已下载 ' + (state==='active'?'选中':'常态') + ' 标签');
+        };
+        img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+    }
+
+    // === 初始化 ===
+    updatePreview();
+})();
+</script>
+</body>
+</html>.height);
+        cropStart = null; cropEnd = null;
+        canvas.onmousedown = (e) => { cropStart = {x: e.offsetX, y: e.offsetY}; cropEnd = null; };
+        canvas.onmousemove = (e) => {
+            if (!cropStart) return;
+            cropEnd = {x: e.offsetX, y: e.offsetY};
+            const ctx2 = canvas.getContext('2d');
+            ctx2.drawImage(refImageData, 0, 0, canvas.width, canvas.height);
+            ctx2.strokeStyle = '#22c55e';
+            ctx2.lineWidth = 2;
+            ctx2.setLineDash([6,3]);
+            const x = Math.min(cropStart.x, cropEnd.x);
+            const y = Math.min(cropStart.y, cropEnd.y);
+            const w = Math.abs(cropEnd.x - cropStart.x);
+            const h = Math.abs(cropEnd.y - cropStart.y);
+            ctx2.strokeRect(x, y, w, h);
+        };
+        canvas.onmouseup = (e) => { cropEnd = {x: e.offsetX, y: e.offsetY}; };
+    }
+
+    function confirmCrop() {
+        if (!cropStart || !cropEnd) { showToast('请先框选区域'); return; }
+        const canvas = document.getElementById('cropCanvas');
+        const x = Math.min(cropStart.x, cropEnd.x);
+        const y = Math.min(cropStart.y, cropEnd.y);
+        const w = Math.abs(cropEnd.x - cropStart.x);
+        const h = Math.abs(cropEnd.y - cropStart.y);
+        if (w < 5 || h < 5) { showToast('框选区域太小'); return; }
+        const croppedCanvas = document.createElement('canvas');
+        croppedCanvas.width = w; croppedCanvas.height = h;
+        croppedCanvas.getContext('2d').drawImage(canvas, x, y, w, h, 0, 0, w, h);
+        rawCropData = { canvas: croppedCanvas, width: w, height: h, scale: canvas._scale };
+        document.getElementById('cropArea').style.display = 'none';
+        document.getElementById('cutoutPreview').style.display = 'block';
+        updateCutoutPreview();
+    }
+
+    function cancelCrop() {
+        document.getElementById('cropArea').style.display = 'none';
+        cropStart = null; cropEnd = null;
+    }
+
+    function removeImageBackground(imageData, tolerance) {
+        const data = imageData.data;
+        const bgColor = {r: data[0], g: data[1], b: data[2]};
+        const corners = [
+            {r: data[0], g: data[1], b: data[2]},
+            {r: data[(imageData.width-1)*4], g: data[(imageData.width-1)*4+1], b: data[(imageData.width-1)*4+2]},
+            {r: data[(imageData.height-1)*imageData.width*4], g: data[(imageData.height-1)*imageData.width*4+1], b: data[(imageData.height-1)*imageData.width*4+2]},
+            {r: data[((imageData.height-1)*imageData.width+imageData.width-1)*4], g: data[((imageData.height-1)*imageData.width+imageData.width-1)*4+1], b: data[((imageData.height-1)*imageData.width+imageData.width-1)*4+2]}
+        ];
+        const avgBg = {r:0,g:0,b:0};
+        corners.forEach(c => { avgBg.r+=c.r; avgBg.g+=c.g; avgBg.b+=c.b; });
+        avgBg.r = Math.round(avgBg.r/4); avgBg.g = Math.round(avgBg.g/4); avgBg.b = Math.round(avgBg.b/4);
+        for (let i = 0; i < data.length; i += 4) {
+            const dr = data[i]-avgBg.r, dg = data[i+1]-avgBg.g, db = data[i+2]-avgBg.b;
+            const dist = Math.sqrt(dr*dr+dg*dg+db*db);
+            if (dist < tolerance * 4.5) data[i+3] = 0;
+        }
+    }
+
+    function updateCutoutPreview() {
+        if (!rawCropData) return;
+        const tolerance = parseInt(document.getElementById('cutoutTolerance').value);
+        document.getElementById('cutoutToleranceVal').textContent = tolerance;
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = rawCropData.width; tempCanvas.height = rawCropData.height;
+        const ctx = tempCanvas.getContext('2d');
+        ctx.drawImage(rawCropData.canvas, 0, 0);
+        const imageData = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+        removeImageBackground(imageData, tolerance);
+        ctx.putImageData(imageData, 0, 0);
+        const previewCanvas = document.getElementById('cutoutPreviewCanvas');
+        const scale = parseFloat(document.getElementById('cutoutScale').value) / 100;
+        previewCanvas.width = rawCropData.width * scale;
+        previewCanvas.height = rawCropData.height * scale;
+        const pctx = previewCanvas.getContext('2d');
+        pctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+        pctx.drawImage(tempCanvas, 0, 0, previewCanvas.width, previewCanvas.height);
+    }
+
+    function updateCutoutScale() {
+        const v = parseInt(document.getElementById('cutoutScale').value);
+        document.getElementById('cutoutScaleVal').textContent = (v/100).toFixed(1);
+        updateCutoutPreview();
+    }
+
+    function updateCutoutPosition() {
+        document.getElementById('cutoutXVal').textContent = document.getElementById('cutoutOffsetX').value;
+        document.getElementById('cutoutYVal').textContent = document.getElementById('cutoutOffsetY').value;
+        if (croppedTextImage) applyCutoutToTag();
+    }
+
+    function applyCutoutToTag() {
+        if (!rawCropData) return;
+        const tolerance = parseInt(document.getElementById('cutoutTolerance').value);
+        const scale = parseInt(document.getElementById('cutoutScale').value) / 100;
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = rawCropData.width; tempCanvas.height = rawCropData.height;
+        const ctx = tempCanvas.getContext('2d');
+        ctx.drawImage(rawCropData.canvas, 0, 0);
+        const imageData = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+        removeImageBackground(imageData, tolerance);
+        ctx.putImageData(imageData, 0, 0);
+        const offsetX = parseInt(document.getElementById('cutoutOffsetX').value);
+        const offsetY = parseInt(document.getElementById('cutoutOffsetY').value);
+        croppedTextImage = { canvas: tempCanvas, scale, offsetX, offsetY };
+        const rawTitle = tagTitle.value || '';
+        [tagNormal, tagActive].forEach(tag => {
+            tag.querySelectorAll('.cropped-text-img').forEach(el => el.remove());
+            tag.innerHTML = '';
+            if (rawTitle) { const span = document.createElement('span'); span.innerHTML = formatTitle(rawTitle); span.style.display = 'none'; tag.appendChild(span); }
+            const img = document.createElement('canvas');
+            img.className = 'cropped-text-img';
+            img.width = tempCanvas.width * scale;
+            img.height = tempCanvas.height * scale;
+            img.style.position = 'absolute';
+            img.style.left = offsetX + 'px';
+            img.style.top = offsetY + 'px';
+            img.getContext('2d').drawImage(tempCanvas, 0, 0, img.width, img.height);
+            tag.appendChild(img);
+        });
+        showToast('📌 已合成到标签');
+    }
+
+    // === 下载 ===
+    function downloadTag(state) {
+        const tag = state === 'active' ? tagActive : tagNormal;
+        const tagRect = tag.getBoundingClientRect();
+        const wrapper = tag.parentElement;
+        const wrapperRect = wrapper.getBoundingClientRect();
+        const canvas = document.createElement('canvas');
+        canvas.width = 180 * 2;
+        canvas.height = 78 * 2;
+        const ctx = canvas.getContext('2d');
+        ctx.scale(2, 2);
+        const html = tag.outerHTML;
+        const svgData = `<svg xmlns="http://www.w3.org/2000/svg" width="180" height="78"><foreignObject width="180" height="78">${html.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}</foreignObject></svg>`;
+        const img = new Image();
+        img.onload = () => {
+            ctx.drawImage(img, 0, 0, 180, 78);
+            const link = document.createElement('a');
+            link.download = `channel-tag-${state}-${Date.now()}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            showToast('✅ 已下载 ' + (state==='active'?'选中':'常态') + ' 标签');
+        };
+        img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+    }
+
+    // === 初始化 ===
+    updatePreview();
+})();
+</script>
+</body>
+</html>
