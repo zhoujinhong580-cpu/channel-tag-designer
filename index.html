@@ -122,6 +122,7 @@ select{background:#252540;border:1px solid #333;color:#fff;padding:6px 10px;bord
       <button class="btn" id="extractBtn" disabled onclick="extractColors()">🎨 提取配色</button>
       <button class="btn" id="cropBtn" disabled onclick="startCrop()">🔪 切图合成</button>
     </div>
+    <div id="refPreview" style="display:none;margin-top:8px"><img id="refPreviewImg" style="max-width:100%;max-height:120px;border-radius:8px;border:1px solid #333"></div>
     <div id="cropArea" style="display:none;margin-top:8px">
       <canvas id="cropCanvas" class="canvas-crop"></canvas>
       <div style="margin-top:6px;display:flex;gap:6px">
@@ -283,6 +284,8 @@ function loadRef(f){
       refImg=i;
       extractBtn.disabled=false;
       cropBtn.disabled=false;
+      document.getElementById('refPreview').style.display='block';
+      document.getElementById('refPreviewImg').src=e.target.result;
       toast('参考图已加载');
     };
     i.src=e.target.result;
