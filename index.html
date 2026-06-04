@@ -83,7 +83,8 @@ select{background:#252540;border:1px solid #333;color:#fff;padding:6px 10px;bord
         <option value="'Alibaba PuHuiTi 3.0','Microsoft YaHei',sans-serif">阿里巴巴普惠体 3.0</option>
         <option value="'HarmonyOS Sans','Microsoft YaHei',sans-serif">HarmonyOS Sans</option>
       </select>
-      <label class="btn-sm btn-ghost" style="cursor:pointer">📁 安装字体<input type="file" id="fontFileInput" accept=".ttf,.otf,.woff,.woff2" class="file-hidden" onchange="installFont(this.files[0])"></label>
+      <button class="btn-sm btn-ghost" onclick="document.getElementById('fontFileInput').click()">📁 安装字体</button>
+      <input type="file" id="fontFileInput" accept=".ttf,.otf,.woff,.woff2" style="display:none" onchange="installFont(this.files[0])">
     </div>
   </div>
 
@@ -116,7 +117,8 @@ select{background:#252540;border:1px solid #333;color:#fff;padding:6px 10px;bord
   <div class="sec">
     <div class="sec-title">🖼 参考图提取配色 &amp; 文字</div>
     <div class="rw">
-      <label class="btn">📤 上传参考图<input type="file" id="refInput" accept="image/*" class="file-hidden" onchange="loadRef(this.files[0])"></label>
+      <button class="btn" onclick="document.getElementById('refInput').click()">📤 上传参考图</button>
+      <input type="file" id="refInput" accept="image/*" style="display:none" onchange="loadRef(this.files[0])">
       <button class="btn" id="extractBtn" disabled onclick="extractColors()">🎨 提取配色</button>
       <button class="btn" id="cropBtn" disabled onclick="startCrop()">🔪 切图合成</button>
     </div>
