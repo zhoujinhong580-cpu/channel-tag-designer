@@ -48,6 +48,7 @@ select{background:#252540;border:1px solid #333;color:#fff;padding:6px 10px;bord
 .toast.on{opacity:1}
 .num-compact{letter-spacing:0}
 .hidden{display:none!important}
+.file-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
 </style>
 </head>
 <body>
@@ -81,7 +82,7 @@ select{background:#252540;border:1px solid #333;color:#fff;padding:6px 10px;bord
         <option value="'Alibaba PuHuiTi 3.0','Microsoft YaHei',sans-serif">阿里巴巴普惠体 3.0</option>
         <option value="'HarmonyOS Sans','Microsoft YaHei',sans-serif">HarmonyOS Sans</option>
       </select>
-      <button class="btn-sm btn-ghost" onclick="document.getElementById('fontFileInput').click()">📁 安装字体</button>
+      <label class="btn-sm btn-ghost" style="cursor:pointer">📁 安装字体<input type="file" id="fontFileInput" accept=".ttf,.otf,.woff,.woff2" class="file-hidden" onchange="installFont(this.files[0])"></label>
     </div>
   </div>
 
@@ -106,8 +107,7 @@ select{background:#252540;border:1px solid #333;color:#fff;padding:6px 10px;bord
   <div class="sec">
     <div class="sec-title">🖼 参考图提取配色 & 文字</div>
     <div class="rw">
-      <button class="btn" onclick="document.getElementById('refInput').click()">📤 上传参考图</button>
-      <input type="file" id="refInput" accept="image/*" class="hidden" onchange="loadRef(this.files[0])">
+      <label class="btn" style="cursor:pointer;display:inline-flex;align-items:center">📤 上传参考图<input type="file" id="refInput" accept="image/*" class="file-hidden" onchange="loadRef(this.files[0])"></label>
       <button class="btn" id="extractBtn" disabled onclick="extractColors()">🎨 提取配色</button>
       <button class="btn" id="cropBtn" disabled onclick="startCrop()">🔪 切图合成</button>
     </div>
@@ -152,7 +152,6 @@ select{background:#252540;border:1px solid #333;color:#fff;padding:6px 10px;bord
 </div>
 
 <div class="toast" id="toast"></div>
-<input type="file" id="fontFileInput" accept=".ttf,.otf,.woff,.woff2" class="hidden" onchange="installFont(this.files[0])">
 
 <script>
 var $tagN=document.getElementById("tagN"),$tagA=document.getElementById("tagA");
