@@ -132,10 +132,11 @@ select{background:#252540;border:1px solid #333;color:#fff;padding:6px 10px;bord
     </div>
     <div id="cutoutArea" style="display:none;margin-top:8px">
       <canvas id="cutoutPreview" style="max-width:100%;border:1px solid #333;border-radius:6px"></canvas>
-      <div class="slider-row"><label>去背景强度</label><input type="range" id="tol" min="10" max="100" value="40" oninput="updateCutout()"><span id="tolVal">40</span></div>
-      <div class="slider-row"><label>缩放</label><input type="range" id="cutS" min="50" max="200" value="100" oninput="updateCutout()"><span id="cutSVal">1.0</span></div>
-      <div class="slider-row"><label>X偏移</label><input type="range" id="cutX" min="0" max="100" value="0" oninput="updateCutout()"><span id="cutXVal">0</span>px</div>
-      <div class="slider-row"><label>Y偏移</label><input type="range" id="cutY" min="0" max="54" value="0" oninput="updateCutout()"><span id="cutYVal">0</span>px</div>
+      <div class="slider-row"><label>去背景强度</label><input type="range" id="tol" min="10" max="100" value="40" oninput="upCutPrev()"><span id="tolVal">40</span></div>
+      <div class="slider-row"><label>缩放</label><input type="range" id="cutS" min="50" max="200" value="100" oninput="upCutPrev()"><span id="cutSVal">1.0</span></div>
+      <div class="slider-row"><label>X偏移</label><input type="range" id="cutX" min="0" max="100" value="0" oninput="upCutPrev()"><span id="cutXVal">0</span>px</div>
+      <div class="slider-row"><label>Y偏移</label><input type="range" id="cutY" min="0" max="54" value="0" oninput="upCutPrev()"><span id="cutYVal">0</span>px</div>
+      <button class="btn btn-sm" onclick="updateCutout();toast('已合成到标签')" style="margin-top:6px">📌 合成到标签</button>
     </div>
   </div>
 
@@ -231,8 +232,6 @@ function updateTag(){
   var t=tagTitle.value,font=tagFont.value,txt=fmtText(t);
   tagNText.innerHTML=txt;tagAText.innerHTML=txt;
   tagN.style.fontFamily=font;tagA.style.fontFamily=font;
-  // restore text if no cutout
-  if(!rawCrop){tagNText.style.display='';tagAText.style.display=''}
   nTextHex.textContent=nText.value;aBgHex.textContent=aBg.value;aTextHex.textContent=aText.value;
   applyStyleToTag(tagN,'normal');applyStyleToTag(tagA,'active');
   updateCSS();
@@ -356,7 +355,8 @@ function confirmCrop(){
   rawCrop={canvas:cc,w:w,h:h};
   document.getElementById('cropArea').style.display='none';
   document.getElementById('cutoutArea').style.display='block';
-  updateCutout();
+  upCutPrev();
+  toast('框选完成，调整参数后点合成');
 }
 
 function cancelCrop(){document.getElementById('cropArea').style.display='none';cropStart=null;cropEnd=null}
@@ -373,31 +373,40 @@ function rmBg(id,tol){
   }
 }
 
-function updateCutout(){
-  if(!rawCrop)return;
-  var tol=+document.getElementById('tol').value;document.getElementById('tolVal').textContent=tol;
-  var s=+document.getElementById('cutS').value/100;document.getElementById('cutSVal').textContent=s.toFixed(1);
-  var ox=+document.getElementById('cutX').value,oy=+document.getElementById('cutY').value;
-  document.getElementById('cutXVal').textContent=ox;document.getElementById('cutYVal').textContent=oy;
-  // process: remove background
+function bgRemoved(){
+  if(!rawCrop)return null;
+  var tol=+document.getElementById('tol').value,s=+document.getElementById('cutS').value/100;
+  document.getElementById('tolVal').textContent=tol;
+  document.getElementById('cutSVal').textContent=s.toFixed(1);
   var t=document.createElement('canvas');t.width=rawCrop.w;t.height=rawCrop.h;
   var tctx=t.getContext('2d');tctx.drawImage(rawCrop.canvas,0,0);
   var id=tctx.getImageData(0,0,t.width,t.height);rmBg(id,tol);tctx.putImageData(id,0,0);
-  // update small preview
-  var pv=document.getElementById('cutoutPreview');pv.width=t.width*s;pv.height=t.height*s;
-  var pctx=pv.getContext('2d');pctx.clearRect(0,0,pv.width,pv.height);pctx.drawImage(t,0,0,pv.width,pv.height);
-  // update tag previews
+  return {canvas:t,scale:s};
+}
+
+function upCutPrev(){
+  var r=bgRemoved();if(!r)return;
+  var pv=document.getElementById('cutoutPreview');pv.width=r.canvas.width*r.scale;pv.height=r.canvas.height*r.scale;
+  var pctx=pv.getContext('2d');pctx.clearRect(0,0,pv.width,pv.height);pctx.drawImage(r.canvas,0,0,pv.width,pv.height);
+}
+
+function updateCutout(){
+  var r=bgRemoved();if(!r)return;
+  var ox=+document.getElementById('cutX').value,oy=+document.getElementById('cutY').value;
+  document.getElementById('cutXVal').textContent=ox;document.getElementById('cutYVal').textContent=oy;
+  upCutPrev();
   var tags=[tagN,tagA],texts=[tagNText,tagAText];
   for(var ti=0;ti<tags.length;ti++){
     var tag=tags[ti];
     var els=tag.querySelectorAll('.cutout');for(var ei=0;ei<els.length;ei++)els[ei].remove();
     if(tagTitle.value)texts[ti].style.display='none';
     var c=document.createElement('canvas');c.className='cutout';
-    c.width=t.width*s;c.height=t.height*s;
-    c.style.position='absolute';c.style.left=ox+'px';c.style.top=oy+'px';c.style.pointerEvents='none';
-    c.getContext('2d').drawImage(t,0,0,c.width,c.height);
+    c.width=r.canvas.width*r.scale;c.height=r.canvas.height*r.scale;
+    c.style.position='absolute';c.style.left=ox+'px';c.style.top=oy+'px';c.style.pointerEvents='none';c.style.zIndex='10';
+    c.getContext('2d').drawImage(r.canvas,0,0,c.width,c.height);
     tag.appendChild(c);
   }
+  toast('已合成到标签');
 }
 
 function downloadTag(state){
