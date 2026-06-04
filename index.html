@@ -132,7 +132,8 @@ select{background:#252540;border:1px solid #333;color:#fff;padding:6px 10px;bord
     </div>
     <div id="cutoutArea" style="display:none;margin-top:8px">
       <canvas id="cutoutPreview" style="max-width:100%;border:1px solid #333;border-radius:6px"></canvas>
-      <div class="slider-row"><label>去背景强度</label><input type="range" id="tol" min="10" max="100" value="40" oninput="upCutPrev()"><span id="tolVal">40</span></div>
+      <div class="slider-row"><label>去背景强度</label><input type="range" id="tol" min="5" max="80" value="20" oninput="upCutPrev()"><span id="tolVal">20</span></div>
+      <div class="rw" style="margin-top:4px"><label>文字亮度</label><select id="textMode" onchange="upCutPrev()"><option value="auto">自动</option><option value="light">亮色文字(深底)</option><option value="dark">暗色文字(浅底)</option></select></div>
       <div class="slider-row"><label>缩放</label><input type="range" id="cutS" min="50" max="200" value="100" oninput="upCutPrev()"><span id="cutSVal">1.0</span></div>
       <div class="slider-row"><label>X偏移</label><input type="range" id="cutX" min="0" max="100" value="0" oninput="upCutPrev()"><span id="cutXVal">0</span>px</div>
       <div class="slider-row"><label>Y偏移</label><input type="range" id="cutY" min="0" max="54" value="0" oninput="upCutPrev()"><span id="cutYVal">0</span>px</div>
@@ -361,15 +362,28 @@ function confirmCrop(){
 
 function cancelCrop(){document.getElementById('cropArea').style.display='none';cropStart=null;cropEnd=null}
 
-function rmBg(id,tol){
+function rmBg(id,tol,tm){
   var d=id.data,w=id.width,h=id.height;
-  var tl={r:d[0],g:d[1],b:d[2]},tr={r:d[(w-1)*4],g:d[(w-1)*4+1],b:d[(w-1)*4+2]},
-      bl={r:d[(h-1)*w*4],g:d[(h-1)*w*4+1],b:d[(h-1)*w*4+2]},
-      br={r:d[((h-1)*w+w-1)*4],g:d[((h-1)*w+w-1)*4+1],b:d[((h-1)*w+w-1)*4+2]};
-  var ab={r:Math.round((tl.r+tr.r+bl.r+br.r)/4),g:Math.round((tl.g+tr.g+bl.g+br.g)/4),b:Math.round((tl.b+tr.b+bl.b+br.b)/4)};
+  var hist={};
+  function add(r,g,b){
+    var key=Math.round(r/16)+','+Math.round(g/16)+','+Math.round(b/16);
+    hist[key]=(hist[key]||0)+1;
+  }
+  for(var x=0;x<w;x++){var i4=x*4;add(d[i4],d[i4+1],d[i4+2]);i4=((h-1)*w+x)*4;add(d[i4],d[i4+1],d[i4+2])}
+  for(var y=1;y<h-1;y++){var i4=y*w*4;add(d[i4],d[i4+1],d[i4+2]);i4=(y*w+w-1)*4;add(d[i4],d[i4+1],d[i4+2])}
+  var bestK='',bestV=0;
+  for(var k in hist){if(hist[k]>bestV){bestV=hist[k];bestK=k}}
+  var p=bestK.split(','),mr=+p[0]*16,mg=+p[1]*16,mb=+p[2]*16;
+  var bgBright=(mr+mg+mb)/3,cutoff=tol*5;
   for(var i=0;i<d.length;i+=4){
-    var dr=d[i]-ab.r,dg=d[i+1]-ab.g,db=d[i+2]-ab.b;
-    if(Math.sqrt(dr*dr+dg*dg+db*db)<tol*4.5)d[i+3]=0;
+    var dr=d[i]-mr,dg=d[i+1]-mg,db=d[i+2]-mb;
+    var dist=Math.sqrt(dr*dr+dg*dg+db*db);
+    var pb=(d[i]+d[i+1]+d[i+2])/3;
+    if(dist<cutoff){
+      if(tm==='light'&&pb>bgBright)continue;
+      if(tm==='dark'&&pb<bgBright)continue;
+      d[i+3]=0;
+    }
   }
 }
 
@@ -380,7 +394,9 @@ function bgRemoved(){
   document.getElementById('cutSVal').textContent=s.toFixed(1);
   var t=document.createElement('canvas');t.width=rawCrop.w;t.height=rawCrop.h;
   var tctx=t.getContext('2d');tctx.drawImage(rawCrop.canvas,0,0);
-  var id=tctx.getImageData(0,0,t.width,t.height);rmBg(id,tol);tctx.putImageData(id,0,0);
+  var id=tctx.getImageData(0,0,t.width,t.height);
+  var tm=document.getElementById('textMode').value;
+  rmBg(id,tol,tm);tctx.putImageData(id,0,0);
   return {canvas:t,scale:s};
 }
 
