@@ -199,33 +199,33 @@ function updateTag(){
 
 function updateCSS(){
   var font=$tagFont.value;
-  document.getElementById("cssCode").textContent=
-".channel-tag {
-  width: 180px;
-  height: 78px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  padding: 24px 30px;
-  font-size: 28px;
-  line-height: 28px;
-  font-weight: 700;
-  font-family: "+font+";
-  box-sizing: border-box;
-  background: transparent;
-  border: none;
-  color: "+nText.value+";
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.channel-tag:hover,
-.channel-tag.active {
-  background: "+aBg.value+";
-  color: "+aText.value+";
-  box-shadow: 0 0 0 3px "+aBg.value+", 0 8px 24px rgba(0,0,0,0.3);
-}";
+  var css=".channel-tag {\n"+
+  "  width: 180px;\n"+
+  "  height: 78px;\n"+
+  "  border-radius: 12px;\n"+
+  "  display: flex;\n"+
+  "  align-items: center;\n"+
+  "  justify-content: flex-start;\n"+
+  "  padding: 24px 30px;\n"+
+  "  font-size: 28px;\n"+
+  "  line-height: 28px;\n"+
+  "  font-weight: 700;\n"+
+  "  font-family: "+font+";\n"+
+  "  box-sizing: border-box;\n"+
+  "  background: transparent;\n"+
+  "  border: none;\n"+
+  "  color: "+nText.value+";\n"+
+  "  cursor: pointer;\n"+
+  "  transition: all 0.3s ease;\n"+
+  "}\n"+
+  "\n"+
+  ".channel-tag:hover,\n"+
+  ".channel-tag.active {\n"+
+  "  background: "+aBg.value+";\n"+
+  "  color: "+aText.value+";\n"+
+  "  box-shadow: 0 0 0 3px "+aBg.value+", 0 8px 24px rgba(0,0,0,0.3);\n"+
+  "}";
+  document.getElementById("cssCode").textContent=css;
 }
 function copyCSS(){navigator.clipboard.writeText(document.getElementById("cssCode").textContent);toast("已复制到剪贴板!")}
 
