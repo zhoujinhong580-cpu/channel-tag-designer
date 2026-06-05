@@ -95,6 +95,11 @@ select{background:#252540;border:1px solid #333;color:#fff;padding:6px 10px;bord
       <div class="color-cell"><label>选中背景</label><input type="color" id="aBg" value="#f43f5e" oninput="updateTag()"><span class="hex" id="aBgHex">#f43f5e</span></div>
       <div class="color-cell"><label>选中文字</label><input type="color" id="aText" value="#ffffff" oninput="updateTag()"><span class="hex" id="aTextHex">#ffffff</span></div>
     </div>
+    <div class="color-row" id="gradColors" style="display:none;margin-top:10px">
+      <div class="color-cell"><label>渐变起点</label><input type="color" id="gStart" value="#f43f5e" oninput="updateTag()"><span class="hex" id="gStartHex">#f43f5e</span></div>
+      <div class="color-cell"><label>渐变终点</label><input type="color" id="gEnd" value="#6366f1" oninput="updateTag()"><span class="hex" id="gEndHex">#6366f1</span></div>
+      <div class="color-cell"><label>渐变角度</label><select id="gAngle" onchange="updateTag()"><option value="135">↘ 135°</option><option value="90">→ 90°</option><option value="45">↗ 45°</option><option value="0">↑ 0°</option><option value="180">← 180°</option><option value="270">↓ 270°</option></select></div>
+    </div>
     <div style="font-size:11px;color:#666;margin-top:10px">预设配色</div>
     <div class="preset-btns">
       <button onclick="preset('rose')">玫红</button>
@@ -190,10 +195,14 @@ var presets={
   dark:{nText:"#888888",aBg:"#444444",aText:"#ffffff"}
 };
 function preset(k){var p=presets[k];nText.value=p.nText;aBg.value=p.aBg;aText.value=p.aText;updateTag()}
-function setStyle(s,btn){curStyle=s;var btns=document.querySelectorAll("#styleBtns button");for(var i=0;i<btns.length;i++)btns[i].classList.remove("active");btn.classList.add("active");updateTag()}
+function setStyle(s,btn){curStyle=s;var btns=document.querySelectorAll("#styleBtns button");for(var i=0;i<btns.length;i++)btns[i].classList.remove("active");btn.classList.add("active");
+  document.getElementById('gradColors').style.display=s==='gradient'?'flex':'none';
+  updateTag()}
 
 function applyStyleToTag(tag,state){
   var abg=aBg.value,atxt=aText.value,ntxt=nText.value;
+  var gs=document.getElementById('gStart').value,ge=document.getElementById('gEnd').value;
+  var ga=document.getElementById('gAngle').value;
   tag.style.transition='all .3s';
   tag.style.boxShadow='none';
   tag.style.border='none';
@@ -209,7 +218,7 @@ function applyStyleToTag(tag,state){
     }else if(curStyle==='pill'){
       tag.style.background='transparent';tag.style.color=ntxt;tag.style.borderRadius='39px';
     }else if(curStyle==='gradient'){
-      tag.style.background='linear-gradient(135deg,'+ntxt+'22,'+abg+'44)';tag.style.color=ntxt;
+      tag.style.background='linear-gradient('+ga+'deg,'+gs+'44,'+ge+'44)';tag.style.color=ntxt;
     }
   }else{
     if(curStyle==='solid'){
@@ -224,8 +233,9 @@ function applyStyleToTag(tag,state){
       tag.style.background=abg;tag.style.color=atxt;tag.style.borderRadius='39px';
       tag.style.boxShadow='0 0 0 3px '+abg+', 0 8px 24px rgba(0,0,0,0.3)';
     }else if(curStyle==='gradient'){
-      tag.style.background='linear-gradient(135deg,'+abg+','+ntxt+')';tag.style.color=atxt;
-      tag.style.boxShadow='0 0 0 3px '+abg+', 0 8px 24px rgba(0,0,0,0.3)';
+      tag.style.background='linear-gradient('+ga+'deg,'+gs+','+ge+')';tag.style.color=atxt;
+      // gradient: no outline border
+    }
     }
   }
 }
@@ -235,6 +245,9 @@ function updateTag(){
   tagNText.innerHTML=txt;tagAText.innerHTML=txt;
   tagN.style.fontFamily=font;tagA.style.fontFamily=font;
   nTextHex.textContent=nText.value;aBgHex.textContent=aBg.value;aTextHex.textContent=aText.value;
+  var gs=document.getElementById('gStart'),ge=document.getElementById('gEnd');
+  document.getElementById('gStartHex').textContent=gs.value;
+  document.getElementById('gEndHex').textContent=ge.value;
   applyStyleToTag(tagN,'normal');applyStyleToTag(tagA,'active');
   updateCSS();
 }
@@ -259,14 +272,21 @@ function updateCSS(){
     '\n  color: '+nText.value+';'+
     '\n  cursor: pointer;'+
     '\n  transition: all 0.3s ease;'+
-    '\n}'+
-    '\n'+
-    '\n.channel-tag:hover,'+
-    '\n.channel-tag.active {'+
-    '\n  background: '+aBg.value+';'+
-    '\n  color: '+aText.value+';'+
-    '\n  box-shadow: 0 0 0 3px '+aBg.value+', 0 8px 24px rgba(0,0,0,0.3);'+
     '\n}';
+  if(curStyle==='gradient'){
+    var gs=document.getElementById('gStart').value,ge=document.getElementById('gEnd').value;
+    var ga=document.getElementById('gAngle').value;
+    css+='\n\n.channel-tag:hover,\n.channel-tag.active {'+
+      '\n  background: linear-gradient('+ga+'deg, '+gs+', '+ge+');'+
+      '\n  color: '+aText.value+';'+
+      '\n}';
+  }else{
+    css+='\n\n.channel-tag:hover,\n.channel-tag.active {'+
+      '\n  background: '+aBg.value+';'+
+      '\n  color: '+aText.value+';'+
+      '\n  box-shadow: 0 0 0 3px '+aBg.value+', 0 8px 24px rgba(0,0,0,0.3);'+
+      '\n}';
+  }
   document.getElementById('cssCode').textContent=css;
 }
 
