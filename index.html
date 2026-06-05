@@ -457,7 +457,7 @@ function downloadTag(state){
   var cv=document.createElement('canvas');cv.width=360;cv.height=156;
   var ctx=cv.getContext('2d');ctx.scale(2,2);
   var cs=getComputedStyle(tag);
-  var bg=cs.background,color=cs.color,font=cs.fontFamily;
+  var bg=cs.backgroundColor,color=cs.color,font=cs.fontFamily;
   var txt='',spans=tag.querySelectorAll('span');
   for(var si=0;si<spans.length;si++){var s=spans[si];if(s.id&&s.id.indexOf('Text')>=0)txt=s.textContent}
   var cutoutEl=tag.querySelector('.cutout');
@@ -469,18 +469,20 @@ function downloadTag(state){
     ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath();
   }
 
+  // Draw background if not transparent
   if(bg!=='rgba(0, 0, 0, 0)'&&bg!=='transparent'){
     var isTrans=bg.indexOf('rgba')===0&&parseFloat(bg.split(',')[3])<0.1;
     if(!isTrans){ctx.fillStyle=bg;rr(0,0,180,78,12);ctx.fill()}
   }
 
+  // Draw cutout image if present
   if(cutoutEl){
-    // cutoutEl is now an <img> element
     var cx=parseInt(cutoutEl.style.left)||0,cy=parseInt(cutoutEl.style.top)||0;
     var cw=cutoutEl.width||cutoutEl.naturalWidth,ch=cutoutEl.height||cutoutEl.naturalHeight;
     ctx.drawImage(cutoutEl,cx,cy,cw,ch);
   }
 
+  // Draw text if no cutout
   if(txt&&!cutoutEl){ctx.fillStyle=color;ctx.font='700 28px '+font;ctx.textBaseline='middle';ctx.fillText(txt,30,39)}
 
   cv.toBlob(function(blob){
