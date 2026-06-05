@@ -139,7 +139,7 @@ select{background:#252540;border:1px solid #333;color:#fff;padding:6px 10px;bord
       <canvas id="cutoutPreview" style="max-width:100%;border:1px solid #333;border-radius:6px"></canvas>
       <div class="slider-row"><label>去背景强度</label><input type="range" id="tol" min="5" max="80" value="20" oninput="updateCutout()"><span id="tolVal">20</span></div>
       <div class="rw" style="margin-top:4px"><label>文字亮度</label><select id="textMode" onchange="updateCutout()"><option value="auto">自动</option><option value="light">亮色文字(深底)</option><option value="dark">暗色文字(浅底)</option></select></div>
-      <div class="slider-row"><label>缩放</label><input type="range" id="cutS" min="10" max="150" value="30" oninput="updateCutout()"><span id="cutSVal">0.3</span></div>
+      <div class="slider-row"><label>缩放</label><input type="range" id="cutS" min="1" max="200" value="30" step="1" oninput="updateCutout()"><span id="cutSVal">0.3</span></div>
       <div class="slider-row"><label>X偏移</label><input type="range" id="cutX" min="0" max="100" value="0" oninput="updateCutout()"><span id="cutXVal">0</span>px</div>
       <div class="slider-row"><label>Y偏移</label><input type="range" id="cutY" min="0" max="54" value="0" oninput="updateCutout()"><span id="cutYVal">0</span>px</div>
       <button class="btn-sm btn-ghost" onclick="clearCutout()" style="margin-top:6px">✕ 清除切图</button>
@@ -373,9 +373,10 @@ function confirmCrop(){
   var cc=document.createElement('canvas');cc.width=w;cc.height=h;
   cc.getContext('2d').drawImage(refImg,x,y,w,h,0,0,w,h);
   rawCrop={canvas:cc,w:w,h:h};
-  // Auto-scale: fit within 120x30 guide area, min 10%
-  var as=Math.max(10,Math.min(120/w,30/h,1.5)*100);
-  document.getElementById('cutS').value=Math.round(as);
+  // Auto-scale: fit within 120x30 guide area
+  var as=Math.min(120/w*100,30/h*100,200);
+  as=Math.max(1,Math.round(as));
+  document.getElementById('cutS').value=as;
   // Auto-center in tag
   var tw=Math.round(w*as),th=Math.round(h*as);
   document.getElementById('cutX').value=Math.max(0,Math.round((180-tw)/2));
@@ -417,7 +418,7 @@ function bgRemoved(){
   if(!rawCrop)return null;
   var tol=+document.getElementById('tol').value,s=+document.getElementById('cutS').value/100;
   document.getElementById('tolVal').textContent=tol;
-  document.getElementById('cutSVal').textContent=s.toFixed(1);
+  document.getElementById('cutSVal').textContent=s.toFixed(2)+'x';
   var t=document.createElement('canvas');t.width=rawCrop.w;t.height=rawCrop.h;
   var tctx=t.getContext('2d');tctx.drawImage(rawCrop.canvas,0,0);
   var id=tctx.getImageData(0,0,t.width,t.height);
