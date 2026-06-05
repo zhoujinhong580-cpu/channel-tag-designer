@@ -419,6 +419,8 @@ function updateCutout(){
     var c=document.createElement('canvas');c.className='cutout';
     c.width=r.canvas.width*r.scale;c.height=r.canvas.height*r.scale;
     c.style.position='absolute';c.style.left=ox+'px';c.style.top=oy+'px';c.style.pointerEvents='none';c.style.zIndex='10';
+    c.style.outline='1px dashed rgba(99,102,241,0.6)';c.style.outlineOffset='-1px';
+    c.style.background='rgba(0,0,0,0.3)';
     c.getContext('2d').drawImage(r.canvas,0,0,c.width,c.height);
     tag.appendChild(c);
   }
