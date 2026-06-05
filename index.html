@@ -358,8 +358,10 @@ function confirmCrop(){
   // Auto-scale: fit within 120x30 guide area
   var as=Math.min(120/w,30/h,1);
   document.getElementById('cutS').value=Math.round(as*100);
-  document.getElementById('cutX').value=0;
-  document.getElementById('cutY').value=0;
+  // Auto-center in tag
+  var tw=Math.round(w*as),th=Math.round(h*as);
+  document.getElementById('cutX').value=Math.max(0,Math.round((180-tw)/2));
+  document.getElementById('cutY').value=Math.max(0,Math.round((78-th)/2));
   document.getElementById('cropArea').style.display='none';
   document.getElementById('cutoutArea').style.display='block';
   upCutPrev();
@@ -417,18 +419,21 @@ function updateCutout(){
   var ox=+document.getElementById('cutX').value,oy=+document.getElementById('cutY').value;
   document.getElementById('cutXVal').textContent=ox;document.getElementById('cutYVal').textContent=oy;
   upCutPrev();
+  // Convert cutout to data URL for reliable img display
+  var dataUrl;
+  try{dataUrl=r.canvas.toDataURL('image/png')}catch(e){toast('切图失败: '+e.message);return}
   var tags=[tagN,tagA],texts=[tagNText,tagAText];
   for(var ti=0;ti<tags.length;ti++){
     var tag=tags[ti];
     var els=tag.querySelectorAll('.cutout');for(var ei=0;ei<els.length;ei++)els[ei].remove();
     if(tagTitle.value)texts[ti].style.display='none';
-    var c=document.createElement('canvas');c.className='cutout';
-    c.width=r.canvas.width*r.scale;c.height=r.canvas.height*r.scale;
-    c.style.position='absolute';c.style.left=ox+'px';c.style.top=oy+'px';c.style.pointerEvents='none';c.style.zIndex='10';
-    c.style.outline='1px dashed rgba(99,102,241,0.6)';c.style.outlineOffset='-1px';
-    c.style.background='rgba(0,0,0,0.3)';
-    c.getContext('2d').drawImage(r.canvas,0,0,c.width,c.height);
-    tag.appendChild(c);
+    var img=document.createElement('img');img.className='cutout';
+    img.src=dataUrl;
+    img.width=r.canvas.width*r.scale;img.height=r.canvas.height*r.scale;
+    img.style.position='absolute';img.style.left=ox+'px';img.style.top=oy+'px';img.style.pointerEvents='none';
+    img.style.zIndex='10';img.style.outline='1px dashed rgba(99,102,241,0.6)';img.style.outlineOffset='-1px';
+    img.style.imageRendering='auto';
+    tag.appendChild(img);
   }
   toast('已合成到标签');
 }
@@ -464,9 +469,11 @@ function downloadTag(state){
     if(!isTrans){ctx.fillStyle=bg;rr(0,0,180,78,12);ctx.fill()}
   }
 
-  if(cutoutEl&&rawCrop){
-    var cutC=rawCrop.canvas;
-    ctx.drawImage(cutC,parseInt(cutoutEl.style.left)||0,parseInt(cutoutEl.style.top)||0,cutoutEl.width,cutoutEl.height);
+  if(cutoutEl){
+    // cutoutEl is now an <img> element
+    var cx=parseInt(cutoutEl.style.left)||0,cy=parseInt(cutoutEl.style.top)||0;
+    var cw=cutoutEl.width||cutoutEl.naturalWidth,ch=cutoutEl.height||cutoutEl.naturalHeight;
+    ctx.drawImage(cutoutEl,cx,cy,cw,ch);
   }
 
   if(txt&&!cutoutEl){ctx.fillStyle=color;ctx.font='700 28px '+font;ctx.textBaseline='middle';ctx.fillText(txt,30,39)}
