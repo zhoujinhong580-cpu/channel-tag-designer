@@ -132,8 +132,8 @@ select{background:#252540;border:1px solid #333;color:#fff;padding:6px 10px;bord
     </div>
     <div id="cutoutArea" style="display:none;margin-top:8px">
       <canvas id="cutoutPreview" style="max-width:100%;border:1px solid #333;border-radius:6px"></canvas>
-      <div class="slider-row"><label>去背景强度</label><input type="range" id="tol" min="5" max="80" value="20" oninput="upCutPrev()"><span id="tolVal">20</span></div>
-      <div class="rw" style="margin-top:4px"><label>文字亮度</label><select id="textMode" onchange="upCutPrev()"><option value="auto">自动</option><option value="light">亮色文字(深底)</option><option value="dark">暗色文字(浅底)</option></select></div>
+      <div class="slider-row"><label>去背景强度</label><input type="range" id="tol" min="5" max="80" value="20" oninput="updateCutout()"><span id="tolVal">20</span></div>
+      <div class="rw" style="margin-top:4px"><label>文字亮度</label><select id="textMode" onchange="updateCutout()"><option value="auto">自动</option><option value="light">亮色文字(深底)</option><option value="dark">暗色文字(浅底)</option></select></div>
       <div class="slider-row"><label>缩放</label><input type="range" id="cutS" min="5" max="200" value="30" oninput="updateCutout()"><span id="cutSVal">0.3</span></div>
       <div class="slider-row"><label>X偏移</label><input type="range" id="cutX" min="0" max="100" value="0" oninput="updateCutout()"><span id="cutXVal">0</span>px</div>
       <div class="slider-row"><label>Y偏移</label><input type="range" id="cutY" min="0" max="54" value="0" oninput="updateCutout()"><span id="cutYVal">0</span>px</div>
@@ -415,6 +415,11 @@ function upCutPrev(){
 }
 
 function updateCutout(){
+  if(!rawCrop)return;
+  clearTimeout(updateCutout._t);
+  updateCutout._t=setTimeout(_updateCutoutNow,30);
+}
+function _updateCutoutNow(){
   var r=bgRemoved();if(!r)return;
   var ox=+document.getElementById('cutX').value,oy=+document.getElementById('cutY').value;
   document.getElementById('cutXVal').textContent=ox;document.getElementById('cutYVal').textContent=oy;
