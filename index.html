@@ -138,6 +138,7 @@ select{background:#252540;border:1px solid #333;color:#fff;padding:6px 10px;bord
       <div class="slider-row"><label>X偏移</label><input type="range" id="cutX" min="0" max="100" value="0" oninput="upCutPrev()"><span id="cutXVal">0</span>px</div>
       <div class="slider-row"><label>Y偏移</label><input type="range" id="cutY" min="0" max="54" value="0" oninput="upCutPrev()"><span id="cutYVal">0</span>px</div>
       <button class="btn btn-sm" onclick="updateCutout();toast('已合成到标签')" style="margin-top:6px">📌 合成到标签</button>
+      <button class="btn-sm btn-ghost" onclick="clearCutout()" style="margin-top:6px;margin-left:4px">✕ 清除切图</button>
     </div>
   </div>
 
@@ -425,6 +426,15 @@ function updateCutout(){
     tag.appendChild(c);
   }
   toast('已合成到标签');
+}
+
+function clearCutout(){
+  var tags=[tagN,tagA];
+  for(var ti=0;ti<tags.length;ti++){
+    var els=tags[ti].querySelectorAll('.cutout');for(var ei=0;ei<els.length;ei++)els[ei].remove();
+  }
+  tagNText.style.display='';tagAText.style.display='';
+  toast('已清除切图');
 }
 
 function downloadTag(state){
