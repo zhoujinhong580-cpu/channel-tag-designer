@@ -139,7 +139,7 @@ select{background:#252540;border:1px solid #333;color:#fff;padding:6px 10px;bord
       <canvas id="cutoutPreview" style="max-width:100%;border:1px solid #333;border-radius:6px"></canvas>
       <div class="slider-row"><label>去背景强度</label><input type="range" id="tol" min="5" max="80" value="20" oninput="updateCutout()"><span id="tolVal">20</span></div>
       <div class="rw" style="margin-top:4px"><label>文字亮度</label><select id="textMode" onchange="updateCutout()"><option value="auto">自动</option><option value="light">亮色文字(深底)</option><option value="dark">暗色文字(浅底)</option></select></div>
-      <div class="slider-row"><label>缩放</label><input type="range" id="cutS" min="1" max="200" value="30" step="1" oninput="syncScale('slider')"><input type="number" id="cutSNum" min="1" max="200" value="30" style="width:60px;text-align:center" oninput="syncScale('num')"><span>%</span><span id="cutSVal">0.30x</span></div>
+      <div class="slider-row"><label>缩放</label><input type="range" id="cutS" min="10" max="2000" value="300" step="1" oninput="syncScale('slider')"><input type="number" id="cutSNum" min="1" max="200" value="30" step="0.1" style="width:65px;text-align:center" oninput="syncScale('num')"><span>%</span><span id="cutSVal">0.30x</span></div>
       <div class="slider-row"><label>X偏移</label><input type="range" id="cutX" min="0" max="100" value="0" oninput="updateCutout()"><span id="cutXVal">0</span>px</div>
       <div class="slider-row"><label>Y偏移</label><input type="range" id="cutY" min="0" max="54" value="0" oninput="updateCutout()"><span id="cutYVal">0</span>px</div>
       <button class="btn-sm btn-ghost" onclick="clearCutout()" style="margin-top:6px">✕ 清除切图</button>
@@ -375,13 +375,13 @@ function confirmCrop(){
   rawCrop={canvas:cc,w:w,h:h};
   // Auto-scale: fit within 120x30 guide area
   var as=Math.min(120/w*100,30/h*100,200);
-  as=Math.max(1,Math.round(as));
-  document.getElementById('cutS').value=as;
-  document.getElementById('cutSNum').value=as;
+  as=Math.max(1,as);
+  document.getElementById('cutSNum').value=as.toFixed(1);
+  document.getElementById('cutS').value=Math.round(as*10);
   // Auto-center in tag
   var tw=Math.round(w*as),th=Math.round(h*as);
-  document.getElementById('cutX').value=Math.max(0,Math.round((180-tw)/2));
-  document.getElementById('cutY').value=Math.max(0,Math.round((78-th)/2));
+  document.getElementById('cutX').value=Math.max(0,Math.round(30+(120-tw)/2));
+  document.getElementById('cutY').value=Math.max(0,Math.round(24+(30-th)/2));
   document.getElementById('cropArea').style.display='none';
   document.getElementById('cutoutArea').style.display='block';
   updateCutout();
@@ -417,7 +417,7 @@ function rmBg(id,tol,tm){
 
 function bgRemoved(){
   if(!rawCrop)return null;
-  var tol=+document.getElementById('tol').value,s=+document.getElementById('cutS').value/100;
+  var tol=+document.getElementById('tol').value,s=+document.getElementById('cutSNum').value/100;
   document.getElementById('tolVal').textContent=tol;
   document.getElementById('cutSVal').textContent=s.toFixed(2)+'x';
   var t=document.createElement('canvas');t.width=rawCrop.w;t.height=rawCrop.h;
@@ -436,8 +436,8 @@ function upCutPrev(){
 
 function syncScale(src){
   var sl=document.getElementById('cutS'),nm=document.getElementById('cutSNum');
-  if(src==='slider'){nm.value=sl.value}
-  else{var v=parseInt(nm.value)||30;v=Math.max(1,Math.min(200,v));nm.value=v;sl.value=v}
+  if(src==='slider'){nm.value=(sl.value/10).toFixed(1)}
+  else{var v=parseFloat(nm.value)||30;v=Math.max(1,Math.min(200,v));nm.value=v.toFixed(1);sl.value=Math.round(v*10)}
   updateCutout();
 }
 
