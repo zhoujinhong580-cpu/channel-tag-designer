@@ -659,10 +659,11 @@ function downloadTag(state){
   // Draw background
   var gradInfo=parseGradient(bgImg);
   if(gradInfo){
-    // Gradient background
+    // CSS angle to Canvas: CSS 0deg=bottom→top, Canvas needs (x1,y1)→(x2,y2)
     var rad=gradInfo.angle*Math.PI/180;
-    var x1=90-Math.cos(rad)*90,y1=39-Math.sin(rad)*39;
-    var x2=90+Math.cos(rad)*90,y2=39+Math.sin(rad)*39;
+    var dx=Math.sin(rad)*90,dy=-Math.cos(rad)*39;
+    var x1=90-dx,y1=39-dy;
+    var x2=90+dx,y2=39+dy;
     var g=ctx.createLinearGradient(x1,y1,x2,y2);
     g.addColorStop(0,gradInfo.start);g.addColorStop(1,gradInfo.end);
     ctx.fillStyle=g;rr(0,0,180,78,12);ctx.fill();
